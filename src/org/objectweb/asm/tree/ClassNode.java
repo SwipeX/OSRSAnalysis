@@ -2,19 +2,19 @@
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,6 +30,7 @@
 package org.objectweb.asm.tree;
 
 import org.objectweb.asm.*;
+import pw.tdekk.Application;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +38,7 @@ import java.util.List;
 
 /**
  * A node that represents a class.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ClassNode extends ClassVisitor {
@@ -112,7 +113,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The runtime visible annotations of this class. This list is a list of
      * {@link AnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label visible
      */
@@ -121,7 +122,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The runtime invisible annotations of this class. This list is a list of
      * {@link AnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label invisible
      */
@@ -130,7 +131,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The runtime visible type annotations of this class. This list is a list
      * of {@link TypeAnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.TypeAnnotationNode
      * @label visible
      */
@@ -139,7 +140,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The runtime invisible type annotations of this class. This list is a list
      * of {@link TypeAnnotationNode} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.tree.TypeAnnotationNode
      * @label invisible
      */
@@ -148,7 +149,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The non standard attributes of this class. This list is a list of
      * {@link Attribute} objects. May be <tt>null</tt>.
-     * 
+     *
      * @associates org.objectweb.asm.Attribute
      */
     public List<Attribute> attrs;
@@ -156,7 +157,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * Informations about the inner classes of this class. This list is a list
      * of {@link InnerClassNode} objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.InnerClassNode
      */
     public List<InnerClassNode> innerClasses;
@@ -164,7 +165,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The fields of this class. This list is a list of {@link FieldNode}
      * objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.FieldNode
      */
     public List<FieldNode> fields;
@@ -172,7 +173,7 @@ public class ClassNode extends ClassVisitor {
     /**
      * The methods of this class. This list is a list of {@link MethodNode}
      * objects.
-     * 
+     *
      * @associates org.objectweb.asm.tree.MethodNode
      */
     public List<MethodNode> methods;
@@ -188,9 +189,8 @@ public class ClassNode extends ClassVisitor {
 
     /**
      * Constructs a new {@link ClassNode}.
-     * 
-     * @param api
-     *            the ASM API version implemented by this visitor. Must be one
+     *
+     * @param api the ASM API version implemented by this visitor. Must be one
      *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      */
     public ClassNode(final int api) {
@@ -201,20 +201,32 @@ public class ClassNode extends ClassVisitor {
         this.methods = new ArrayList<>();
     }
 
-    public MethodNode getMethod(String name, String desc){
-        for(MethodNode mn : methods){
-            if(mn.name.equals(name) && mn.desc.equals(desc))
+    public MethodNode getMethod(String name, String desc) {
+        for (MethodNode mn : methods) {
+            if (mn.name.equals(name) && mn.desc.equals(desc))
                 return mn;
+        }
+        ClassNode parent = Application.archive.classes().get(superName);
+        if (parent != null && !parent.name.startsWith("java/")) {
+            return parent.getMethod(name, desc);
         }
         return null;
     }
 
-    public FieldNode getField(String name, String desc){
-        for(FieldNode fn : fields){
-            if(fn.name.equals(name) && fn.desc.equals(desc))
+    public FieldNode getField(String name, String desc) {
+        for (FieldNode fn : fields) {
+            if (fn.name.equals(name) && fn.desc.equals(desc))
                 return fn;
         }
+        ClassNode parent = Application.archive.classes().get(superName);
+        if (parent != null && !parent.name.equals("java/lang/Object")) {
+            return parent.getField(name, desc);
+        }
         return null;
+    }
+
+    public ClassNode getSuperClass() {
+        return Application.archive.classes().get(superName);
     }
 
     // ------------------------------------------------------------------------
@@ -223,8 +235,8 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public void visit(final int version, final int access, final String name,
-            final String signature, final String superName,
-            final String[] interfaces) {
+                      final String signature, final String superName,
+                      final String[] interfaces) {
         this.version = version;
         this.access = access;
         this.name = name;
@@ -243,7 +255,7 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public void visitOuterClass(final String owner, final String name,
-            final String desc) {
+                                final String desc) {
         outerClass = owner;
         outerMethod = name;
         outerMethodDesc = desc;
@@ -251,7 +263,7 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         AnnotationNode an = new AnnotationNode(desc);
         if (visible) {
             if (visibleAnnotations == null) {
@@ -269,7 +281,7 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         TypeAnnotationNode an = new TypeAnnotationNode(typeRef, typePath, desc);
         if (visible) {
             if (visibleTypeAnnotations == null) {
@@ -295,7 +307,7 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public void visitInnerClass(final String name, final String outerName,
-            final String innerName, final int access) {
+                                final String innerName, final int access) {
         InnerClassNode icn = new InnerClassNode(name, outerName, innerName,
                 access);
         innerClasses.add(icn);
@@ -303,7 +315,7 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                   final String desc, final String signature, final Object value) {
         FieldNode fn = new FieldNode(access, name, desc, signature, value);
         fn.setParent(this);
         fields.add(fn);
@@ -312,7 +324,7 @@ public class ClassNode extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                     final String desc, final String signature, final String[] exceptions) {
         MethodNode mn = new MethodNode(access, name, desc, signature,
                 exceptions);
         mn.setParent(this);
@@ -333,9 +345,8 @@ public class ClassNode extends ClassVisitor {
      * This methods checks that this node, and all its nodes recursively, do not
      * contain elements that were introduced in more recent versions of the ASM
      * API than the given version.
-     * 
-     * @param api
-     *            an ASM API version. Must be one of {@link Opcodes#ASM4} or
+     *
+     * @param api an ASM API version. Must be one of {@link Opcodes#ASM4} or
      *            {@link Opcodes#ASM5}.
      */
     public void check(final int api) {
@@ -359,9 +370,8 @@ public class ClassNode extends ClassVisitor {
 
     /**
      * Makes the given class visitor visit this class.
-     * 
-     * @param cv
-     *            a class visitor.
+     *
+     * @param cv a class visitor.
      */
     public void accept(final ClassVisitor cv) {
         // visits header

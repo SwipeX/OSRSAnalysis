@@ -219,8 +219,7 @@ public class MethodNode extends MethodVisitor {
     /**
      * Constructs an uninitialized {@link MethodNode}.
      *
-     * @param api
-     *            the ASM API version implemented by this visitor. Must be one
+     * @param api the ASM API version implemented by this visitor. Must be one
      *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      */
     public MethodNode(final int api) {
@@ -233,20 +232,15 @@ public class MethodNode extends MethodVisitor {
      * constructor</i>. Instead, they must use the
      * {@link #MethodNode(int, int, String, String, String, String[])} version.
      *
-     * @param access
-     *            the method's access flags (see {@link Opcodes}). This
-     *            parameter also indicates if the method is synthetic and/or
-     *            deprecated.
-     * @param name
-     *            the method's name.
-     * @param desc
-     *            the method's descriptor (see {@link Type}).
-     * @param signature
-     *            the method's signature. May be <tt>null</tt>.
-     * @param exceptions
-     *            the internal names of the method's exception classes (see
-     *            {@link Type#getInternalName() getInternalName}). May be
-     *            <tt>null</tt>.
+     * @param access     the method's access flags (see {@link Opcodes}). This
+     *                   parameter also indicates if the method is synthetic and/or
+     *                   deprecated.
+     * @param name       the method's name.
+     * @param desc       the method's descriptor (see {@link Type}).
+     * @param signature  the method's signature. May be <tt>null</tt>.
+     * @param exceptions the internal names of the method's exception classes (see
+     *                   {@link Type#getInternalName() getInternalName}). May be
+     *                   <tt>null</tt>.
      */
     public MethodNode(final int access, final String name, final String desc,
                       final String signature, final String[] exceptions) {
@@ -256,23 +250,17 @@ public class MethodNode extends MethodVisitor {
     /**
      * Constructs a new {@link MethodNode}.
      *
-     * @param api
-     *            the ASM API version implemented by this visitor. Must be one
-     *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
-     * @param access
-     *            the method's access flags (see {@link Opcodes}). This
-     *            parameter also indicates if the method is synthetic and/or
-     *            deprecated.
-     * @param name
-     *            the method's name.
-     * @param desc
-     *            the method's descriptor (see {@link Type}).
-     * @param signature
-     *            the method's signature. May be <tt>null</tt>.
-     * @param exceptions
-     *            the internal names of the method's exception classes (see
-     *            {@link Type#getInternalName() getInternalName}). May be
-     *            <tt>null</tt>.
+     * @param api        the ASM API version implemented by this visitor. Must be one
+     *                   of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
+     * @param access     the method's access flags (see {@link Opcodes}). This
+     *                   parameter also indicates if the method is synthetic and/or
+     *                   deprecated.
+     * @param name       the method's name.
+     * @param desc       the method's descriptor (see {@link Type}).
+     * @param signature  the method's signature. May be <tt>null</tt>.
+     * @param exceptions the internal names of the method's exception classes (see
+     *                   {@link Type#getInternalName() getInternalName}). May be
+     *                   <tt>null</tt>.
      */
     public MethodNode(final int api, final int access, final String name,
                       final String desc, final String signature, final String[] exceptions) {
@@ -292,6 +280,10 @@ public class MethodNode extends MethodVisitor {
             this.exceptions.addAll(Arrays.asList(exceptions));
         }
         this.instructions = new InsnList();
+    }
+
+    public Handle getHandle() {
+        return new Handle(0, parent.name, name, desc);
     }
 
     public void setParent(ClassNode node) {
@@ -589,8 +581,7 @@ public class MethodNode extends MethodVisitor {
      * the {@link Label#info} field to store associations between labels and
      * label nodes.
      *
-     * @param l
-     *            a Label.
+     * @param l a Label.
      * @return the LabelNode corresponding to l.
      */
     protected LabelNode getLabelNode(final Label l) {
@@ -630,8 +621,7 @@ public class MethodNode extends MethodVisitor {
      * recursively, do not contain elements that were introduced in more recent
      * versions of the ASM API than the given version.
      *
-     * @param api
-     *            an ASM API version. Must be one of {@link Opcodes#ASM4} or
+     * @param api an ASM API version. Must be one of {@link Opcodes#ASM4} or
      *            {@link Opcodes#ASM5}.
      */
     public void check(final int api) {
@@ -682,8 +672,7 @@ public class MethodNode extends MethodVisitor {
     /**
      * Makes the given class visitor visit this method.
      *
-     * @param cv
-     *            a class visitor.
+     * @param cv a class visitor.
      */
     public void accept(final ClassVisitor cv) {
         String[] exceptions = new String[this.exceptions.size()];
@@ -698,8 +687,7 @@ public class MethodNode extends MethodVisitor {
     /**
      * Makes the given method visitor visit this method.
      *
-     * @param mv
-     *            a method visitor.
+     * @param mv a method visitor.
      */
     public void accept(final MethodVisitor mv) {
         // visits the method parameters

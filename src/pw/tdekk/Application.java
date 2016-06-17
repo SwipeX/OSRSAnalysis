@@ -1,7 +1,10 @@
 package pw.tdekk;
 
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.tree.ClassNode;
-import pw.tdekk.deob.UnusedVisitor;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
+import pw.tdekk.deob.CallGraph;
 import pw.tdekk.util.Crawler;
 
 import java.io.IOException;
@@ -11,6 +14,7 @@ import java.io.IOException;
  */
 public class Application {
     public static JarArchive archive;
+    private static int fremoved;
 
     public static void main(String[] args) throws IOException {
         Crawler crawler = new Crawler();
@@ -19,10 +23,33 @@ public class Application {
         }
         archive = new JarArchive("os_pack.jar");
         archive.build();
-        archive.dispatch(new UnusedVisitor());
-        for(ClassNode cn :archive.classes().values()){
-            cn.methods.stream().filter(mn -> mn.referenceCount == 0).forEach(mn ->
-                    System.out.println(cn.name + "." + mn.name + "_" + mn.desc + " Possible removal"));
+        int mCount = 0;
+        int fCount = 0;
+
+        for (ClassNode classNode : archive.classes().values()) {
+            mCount += classNode.methods.size();
+            fCount += classNode.fields.size();
         }
+        CallGraph callGraph = new CallGraph();
+        callGraph.build();
+        int removed = 0;
+        for (Handle handle : callGraph.getCalledMethods()) {
+            ClassNode node = archive.classes().get(handle.getOwner());
+            if (node != null) {
+                MethodNode method = node.getMethod(handle.getName(), handle.getDesc());
+                node.methods.remove(method);
+                removed++;
+            }
+        }
+        for (Handle handle : callGraph.getCalledFields()) {
+            ClassNode node = archive.classes().get(handle.getOwner());
+            if (node != null) {
+                FieldNode field = node.getField(handle.getName(), handle.getDesc());
+                node.fields.remove(field);
+                fremoved++;
+            }
+        }
+        System.out.println("Removed " + (mCount - removed) + " unused methods");
+        System.out.println("Removed " + (fCount - fremoved) + " unused fields");
     }
 }

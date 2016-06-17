@@ -303,4 +303,7 @@ public class FieldNode extends FieldVisitor {
         }
         fv.visitEnd();
     }
+    public Handle getHandle() {
+        return new Handle(0, parent.name, name, desc);
+    }
 }
