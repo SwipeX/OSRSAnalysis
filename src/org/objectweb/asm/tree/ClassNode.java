@@ -35,6 +35,7 @@ import pw.tdekk.Application;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A node that represents a class.
@@ -195,10 +196,10 @@ public class ClassNode extends ClassVisitor {
      */
     public ClassNode(final int api) {
         super(api);
-        this.interfaces = new ArrayList<>();
-        this.innerClasses = new ArrayList<>();
-        this.fields = new ArrayList<>();
-        this.methods = new ArrayList<>();
+        this.interfaces = new CopyOnWriteArrayList<>();
+        this.innerClasses = new CopyOnWriteArrayList<>();
+        this.fields = new CopyOnWriteArrayList<>();
+        this.methods = new CopyOnWriteArrayList<>();
     }
 
     public MethodNode getMethod(String name, String desc) {
@@ -429,5 +430,13 @@ public class ClassNode extends ClassVisitor {
         }
         // visits end
         cv.visitEnd();
+    }
+
+    public boolean isDescendantOf(String className) {
+        if (superName.equals(className)) return true;
+        ClassNode superClass = getSuperClass();
+        if (superClass != null)
+            return superClass.isDescendantOf(className);
+        return false;
     }
 }

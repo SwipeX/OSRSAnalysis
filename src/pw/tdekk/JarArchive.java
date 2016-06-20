@@ -113,7 +113,7 @@ public class JarArchive extends Archive {
                         reader.accept(cn, ClassReader.SKIP_FRAMES);
                         classes.put(name.replace(".class", ""), cn);
                     } else {
-                        resources.put(name, readInputStream(input));
+                       // resources.put(name, readInputStream(input));
                     }
                 } catch (IOException ioe) {
                     forEachExceptions.add(ioe);
@@ -145,7 +145,7 @@ public class JarArchive extends Archive {
      * @param writerFlags     The ClassWriter flags to use.
      * @throws IOException If an error occurs while manipulating an output stream
      */
-    private void write(File destinationFile, int writerFlags) throws IOException {
+    void write(File destinationFile, int writerFlags) throws IOException {
         if (!built()) {
             throw new IllegalStateException("You cannot write a JarArchive until it has been built.");
         }

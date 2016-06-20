@@ -1,4 +1,4 @@
-package pw.tdekk.deob;
+package pw.tdekk.deob.data;
 
 import java.util.*;
 
