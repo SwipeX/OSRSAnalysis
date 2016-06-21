@@ -175,6 +175,8 @@ public class MethodNode extends MethodVisitor {
      */
     public int maxLocals;
 
+    public boolean isOverride;
+
     /**
      * The local variables of this method. This list is a list of
      * {@link LocalVariableNode} objects. May be <tt>null</tt>

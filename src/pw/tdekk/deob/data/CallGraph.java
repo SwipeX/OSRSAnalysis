@@ -27,41 +27,6 @@ public class CallGraph extends DirectedGraph<Handle, Handle> {
         List<MethodNode> entryPoints = new ArrayList<>();
         Application.archive.classes().values().forEach(c -> {
             entryPoints.addAll(c.methods.stream().filter(m -> m.name.length() > 2).collect(Collectors.toList()));
-            c.accept(new ClassVisitor(Opcodes.ASM5) {
-                @Override
-                public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-                    for (String iface : interfaces) {
-                        if (archive.classes().containsKey(iface)) {
-                            ClassNode node = archive.classes().get(iface);
-                            for (MethodNode mn : node.methods) {
-                                MethodNode located = c.getMethod(mn.name, mn.desc);
-                                if (located != null) {
-                                    entryPoints.add(located);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                    ClassNode node = Application.archive.classes().get(c.name);
-                    if (node != null) {
-                        MethodNode called = node.getMethod(name, desc);
-                        if (called != null) {
-                            ClassNode superClass = node.getSuperClass();
-                            if (superClass != null) {
-                                MethodNode superMethod = superClass.getMethod(name, desc);
-                                if (superMethod != null) {
-                                    entryPoints.add(superMethod);
-                                }
-                            }
-                        }
-                    }
-                    return super.visitMethod(access, name, desc, signature, exceptions);
-                }
-            });
-
         });
         return entryPoints;
     }

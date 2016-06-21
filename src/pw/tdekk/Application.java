@@ -19,13 +19,14 @@ public class Application {
     public static int fieldCount;
     private final static AbstractTransform[] transforms = new AbstractTransform[]{new UnusedMethods(), new OpaquePredicates()};
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Crawler crawler = new Crawler();
         if (crawler.outdated()) {
             crawler.download();
         }
         archive = new JarArchive("os_pack.jar");
         archive.build();
+        while(!archive.built){Thread.sleep(20);}
         Arrays.stream(transforms).forEach(t -> t.transform());
         archive.write(new File("test.jar"), ClassWriter.COMPUTE_MAXS);
     }

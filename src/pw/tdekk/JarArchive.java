@@ -1,8 +1,8 @@
 package pw.tdekk;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.*;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public class JarArchive extends Archive {
      * @throws IOException if an error occurs while locating, reading, or parsing the file
      */
     public long build() throws IOException {
-        return build(true ? 1 : Long.MAX_VALUE);
+        return build(2);
     }
 
     /**
@@ -104,7 +104,7 @@ public class JarArchive extends Archive {
                 entryStreams.put(entry.getName(), jar.getInputStream(entry));
             }
             CopyOnWriteArrayList<IOException> forEachExceptions = new CopyOnWriteArrayList<>();
-            entryStreams.forEach(parallelismThreshold, (name, input) -> {
+            entryStreams.forEach((name, input) -> {
                 try {
                     if (name.endsWith(".class")) {
                         ClassNode cn = new ClassNode();
@@ -113,7 +113,7 @@ public class JarArchive extends Archive {
                         reader.accept(cn, ClassReader.SKIP_FRAMES);
                         classes.put(name.replace(".class", ""), cn);
                     } else {
-                       // resources.put(name, readInputStream(input));
+                     //   resources.put(name, readInputStream(input));
                     }
                 } catch (IOException ioe) {
                     forEachExceptions.add(ioe);
@@ -135,6 +135,22 @@ public class JarArchive extends Archive {
             }
         }
         built = true;
+        for (ClassNode factory : classes().values()) {
+            factory.accept(new ClassVisitor(Opcodes.ASM5) {
+                @Override
+                public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                    MethodNode mn = factory.getMethod(name, desc);
+                    ClassNode superClass = mn.parent.getSuperClass();
+                    while (superClass != null) {
+                        if (superClass.getMethod(name, desc) != null)
+                            mn.isOverride = true;
+                        superClass = superClass.getSuperClass();
+                    }
+                    System.out.println(factory.name+"."+mn.name+" "+mn.isOverride);
+                    return super.visitMethod(access, name, desc, signature, exceptions);
+                }
+            });
+        }
         return System.currentTimeMillis() - time;
     }
 

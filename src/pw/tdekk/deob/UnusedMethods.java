@@ -42,6 +42,9 @@ public class UnusedMethods implements AbstractTransform {
                     if ((access & Opcodes.ACC_ABSTRACT) == Opcodes.ACC_ABSTRACT) {
                         callGraph.getCalledMethods().add(new Handle(0, classNode.name, name, desc));
                     }
+                    MethodNode node = classNode.getMethod(name, desc);
+                    if(node.isOverride)
+                        callGraph.getCalledMethods().add(node.getHandle());
                     return super.visitMethod(access, name, desc, signature, exceptions);
                 }
             });
