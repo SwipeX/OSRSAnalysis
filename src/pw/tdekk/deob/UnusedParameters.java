@@ -11,6 +11,7 @@ import pw.tdekk.Application;
 import pw.tdekk.test.App;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,33 +26,52 @@ public class UnusedParameters implements Mutator {
             for (MethodNode mn : node.methods) {
                 int offset = (mn.access & Opcodes.ACC_STATIC) != 0 ? 0 : 1;
                 Type[] types = Type.getArgumentTypes(mn.desc);
-                int[] used = new int[types.length];
+                List<Integer> used = new ArrayList<>();
                 mn.accept(new MethodVisitor(Opcodes.ASM5) {
                     @Override
                     public void visitVarInsn(int opcode, int var) {
                         int index = var - offset;
-                        used[index]++;
+                        used.add(index);
                         super.visitVarInsn(opcode, var);
                     }
                 });
-                int removed = 0;
-                for (int i = 0; i < types.length; i++) {
-                    if (used[i] > 0) {
-                        remove(mn, i - removed);
-                        removed++;
-                        used[i] = 0;
-                    }
+                if (used.size() == 0) continue;
+                List<Integer> targets = new ArrayList<>();
+                for (int i = offset; i < types.length; i++) {
+                    if (!used.contains(i))
+                        targets.add(i);
                 }
-                totalRemoved += removed;
+                if (targets.size() == 0) continue;
+                Collections.sort(targets, Collections.reverseOrder());
+                remove(mn, targets);
+                totalRemoved += targets.size();
             }
         }
+        System.out.println("Removed " + totalRemoved + " unused parameters!");
     }
 
-    private MethodNode remove(MethodNode mn, int paramIndex) {
+    private MethodNode remove(MethodNode mn, List<Integer> targets) {
+        final int[] call = {0};
+        for (ClassNode node : Application.getClasses().values()) {
+            for (MethodNode method : node.methods) {
+                method.accept(new MethodVisitor(Opcodes.ASM5) {
+                    @Override
+                    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                        if (owner.equals(mn.owner.name) && name.equals(mn.name) && desc.equals(mn.desc)) {
+                            call[0]++;
+                            //alter param loads to not have @targets
+                        }
+                        super.visitMethodInsn(opcode, owner, name, desc, itf);
+                    }
+                });
+
+            }
+        }
+        System.out.println("Altered "+ call[0] +" calls");
         String newDesc = "(";
         Type[] types = Type.getArgumentTypes(mn.desc);
         for (int i = 0; i < types.length; i++) {
-            if (i != paramIndex) {
+            if (!targets.contains(i)) {
                 newDesc += types[i].getDescriptor();
             }
         }
