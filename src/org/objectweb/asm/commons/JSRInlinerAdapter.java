@@ -69,7 +69,7 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
     /**
      * For each label that is jumped to by a JSR, we create a BitSet instance.
      */
-    private final Map<LabelNode, BitSet> subroutineHeads = new HashMap<>();
+    private final Map<LabelNode, BitSet> subroutineHeads = new HashMap<LabelNode, BitSet>();
 
     /**
      * This subroutine instance denotes the line of execution that is not
@@ -107,11 +107,16 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
      *            the internal names of the method's exception classes (see
      *            {@link Type#getInternalName() getInternalName}). May be
      *            <tt>null</tt>.
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public JSRInlinerAdapter(final MethodVisitor mv, final int access,
             final String name, final String desc, final String signature,
             final String[] exceptions) {
         this(Opcodes.ASM5, mv, access, name, desc, signature, exceptions);
+        if (getClass() != JSRInlinerAdapter.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -196,8 +201,9 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
 
         // Go through the head of each subroutine and find any nodes reachable
         // to that subroutine without following any JSR links.
-        for (Map.Entry<LabelNode, BitSet> entry : subroutineHeads
-                .entrySet()) {
+        for (Iterator<Map.Entry<LabelNode, BitSet>> it = subroutineHeads
+                .entrySet().iterator(); it.hasNext();) {
+            Map.Entry<LabelNode, BitSet> entry = it.next();
             LabelNode lab = entry.getKey();
             BitSet sub = entry.getValue();
             int index = instructions.indexOf(lab);
@@ -234,7 +240,10 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
         boolean loop = true;
         while (loop) {
             loop = false;
-            for (TryCatchBlockNode trycatch : tryCatchBlocks) {
+            for (Iterator<TryCatchBlockNode> it = tryCatchBlocks.iterator(); it
+                    .hasNext();) {
+                TryCatchBlockNode trycatch = it.next();
+
                 if (LOGGING) {
                     // TODO use of default toString().
                     log("Scanning try/catch " + trycatch);
@@ -348,6 +357,17 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
             // Use tail recursion here in the form of an outer while loop to
             // avoid our stack growing needlessly:
             index++;
+
+            // We implicitly assumed above that execution can always fall
+            // through to the next instruction after a JSR. But a subroutine may
+            // never return, in which case the code after the JSR is unreachable
+            // and can be anything. In particular, it can seem to fall off the
+            // end of the method, so we must handle this case here (we could
+            // instead detect whether execution can return or not from a JSR,
+            // but this is more complicated).
+            if (index >= instructions.size()) {
+                return;
+            }
         }
     }
 
@@ -356,7 +376,7 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
      * subroutine until the code is fully elaborated.
      */
     private void emitCode() {
-        LinkedList<Instantiation> worklist = new LinkedList<>();
+        LinkedList<Instantiation> worklist = new LinkedList<Instantiation>();
         // Create an instantiation of the "root" subroutine, which is just the
         // main routine
         worklist.add(new Instantiation(null, mainSubroutine));
@@ -364,8 +384,8 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
         // Emit instantiations of each subroutine we encounter, including the
         // main subroutine
         InsnList newInstructions = new InsnList();
-        List<TryCatchBlockNode> newTryCatchBlocks = new ArrayList<>();
-        List<LocalVariableNode> newLocalVariables = new ArrayList<>();
+        List<TryCatchBlockNode> newTryCatchBlocks = new ArrayList<TryCatchBlockNode>();
+        List<LocalVariableNode> newLocalVariables = new ArrayList<LocalVariableNode>();
         while (!worklist.isEmpty()) {
             Instantiation inst = worklist.removeFirst();
             emitSubroutine(inst, worklist, newInstructions, newTryCatchBlocks,
@@ -493,7 +513,10 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
         }
 
         // Emit try/catch blocks that are relevant to this method.
-        for (TryCatchBlockNode trycatch : tryCatchBlocks) {
+        for (Iterator<TryCatchBlockNode> it = tryCatchBlocks.iterator(); it
+                .hasNext();) {
+            TryCatchBlockNode trycatch = it.next();
+
             if (LOGGING) {
                 // TODO use of default toString().
                 log("try catch block original labels=" + trycatch.start + '-'
@@ -527,7 +550,9 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
                     trycatch.type));
         }
 
-        for (LocalVariableNode lvnode : localVariables) {
+        for (Iterator<LocalVariableNode> it = localVariables.iterator(); it
+                .hasNext();) {
+            LocalVariableNode lvnode = it.next();
             if (LOGGING) {
                 log("local var " + lvnode.name);
             }
@@ -583,7 +608,7 @@ public class JSRInlinerAdapter extends MethodNode implements Opcodes {
          * 
          * @see #findOwner(int)
          */
-        public final Map<LabelNode, LabelNode> rangeTable = new HashMap<>();
+        public final Map<LabelNode, LabelNode> rangeTable = new HashMap<LabelNode, LabelNode>();
 
         /**
          * All returns for this instantiation will be mapped to this label

@@ -2,19 +2,19 @@
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- * <p>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- * <p>
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,17 +29,24 @@
  */
 package org.objectweb.asm.tree;
 
-import org.objectweb.asm.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.TypePath;
+
 /**
  * A node that represents a field.
- *
+ * 
  * @author Eric Bruneton
  */
 public class FieldNode extends FieldVisitor {
+
+    public ClassNode owner;
 
     /**
      * The field's access flags (see {@link org.objectweb.asm.Opcodes}). This
@@ -72,7 +79,7 @@ public class FieldNode extends FieldVisitor {
     /**
      * The runtime visible annotations of this field. This list is a list of
      * {@link AnnotationNode} objects. May be <tt>null</tt>.
-     *
+     * 
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label visible
      */
@@ -81,7 +88,7 @@ public class FieldNode extends FieldVisitor {
     /**
      * The runtime invisible annotations of this field. This list is a list of
      * {@link AnnotationNode} objects. May be <tt>null</tt>.
-     *
+     * 
      * @associates org.objectweb.asm.tree.AnnotationNode
      * @label invisible
      */
@@ -90,7 +97,7 @@ public class FieldNode extends FieldVisitor {
     /**
      * The runtime visible type annotations of this field. This list is a list
      * of {@link TypeAnnotationNode} objects. May be <tt>null</tt>.
-     *
+     * 
      * @associates org.objectweb.asm.tree.TypeAnnotationNode
      * @label visible
      */
@@ -99,7 +106,7 @@ public class FieldNode extends FieldVisitor {
     /**
      * The runtime invisible type annotations of this field. This list is a list
      * of {@link TypeAnnotationNode} objects. May be <tt>null</tt>.
-     *
+     * 
      * @associates org.objectweb.asm.tree.TypeAnnotationNode
      * @label invisible
      */
@@ -108,21 +115,16 @@ public class FieldNode extends FieldVisitor {
     /**
      * The non standard attributes of this field. This list is a list of
      * {@link Attribute} objects. May be <tt>null</tt>.
-     *
+     * 
      * @associates org.objectweb.asm.Attribute
      */
     public List<Attribute> attrs;
-
-    public ClassNode parent;
-
-    public int referenceCount = 0;
-
 
     /**
      * Constructs a new {@link FieldNode}. <i>Subclasses must not use this
      * constructor</i>. Instead, they must use the
      * {@link #FieldNode(int, int, String, String, String, Object)} version.
-     *
+     * 
      * @param access
      *            the field's access flags (see
      *            {@link org.objectweb.asm.Opcodes}). This parameter also
@@ -139,17 +141,21 @@ public class FieldNode extends FieldVisitor {
      *            <tt>null</tt> if the field does not have an initial value,
      *            must be an {@link Integer}, a {@link Float}, a {@link Long}, a
      *            {@link Double} or a {@link String}.
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public FieldNode(final int access, final String name, final String desc,
-                     final String signature, final Object value) {
+            final String signature, final Object value) {
         this(Opcodes.ASM5, access, name, desc, signature, value);
+        if (getClass() != FieldNode.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
      * Constructs a new {@link FieldNode}. <i>Subclasses must not use this
-     * constructor</i>. Instead, they must use the
-     * {@link #FieldNode(int, int, String, String, String, Object)} version.
-     *
+     * constructor</i>.
+     * 
      * @param api
      *            the ASM API version implemented by this visitor. Must be one
      *            of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
@@ -171,7 +177,7 @@ public class FieldNode extends FieldVisitor {
      *            {@link Double} or a {@link String}.
      */
     public FieldNode(final int api, final int access, final String name,
-                     final String desc, final String signature, final Object value) {
+            final String desc, final String signature, final Object value) {
         super(api);
         this.access = access;
         this.name = name;
@@ -180,25 +186,22 @@ public class FieldNode extends FieldVisitor {
         this.value = value;
     }
 
-    public void setParent(ClassNode node) {
-        parent = node;
-    }
     // ------------------------------------------------------------------------
     // Implementation of the FieldVisitor abstract class
     // ------------------------------------------------------------------------
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-                                             final boolean visible) {
+            final boolean visible) {
         AnnotationNode an = new AnnotationNode(desc);
         if (visible) {
             if (visibleAnnotations == null) {
-                visibleAnnotations = new ArrayList<>(1);
+                visibleAnnotations = new ArrayList<AnnotationNode>(1);
             }
             visibleAnnotations.add(an);
         } else {
             if (invisibleAnnotations == null) {
-                invisibleAnnotations = new ArrayList<>(1);
+                invisibleAnnotations = new ArrayList<AnnotationNode>(1);
             }
             invisibleAnnotations.add(an);
         }
@@ -207,16 +210,16 @@ public class FieldNode extends FieldVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-                                                 TypePath typePath, String desc, boolean visible) {
+            TypePath typePath, String desc, boolean visible) {
         TypeAnnotationNode an = new TypeAnnotationNode(typeRef, typePath, desc);
         if (visible) {
             if (visibleTypeAnnotations == null) {
-                visibleTypeAnnotations = new ArrayList<>(1);
+                visibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(1);
             }
             visibleTypeAnnotations.add(an);
         } else {
             if (invisibleTypeAnnotations == null) {
-                invisibleTypeAnnotations = new ArrayList<>(1);
+                invisibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(1);
             }
             invisibleTypeAnnotations.add(an);
         }
@@ -226,7 +229,7 @@ public class FieldNode extends FieldVisitor {
     @Override
     public void visitAttribute(final Attribute attr) {
         if (attrs == null) {
-            attrs = new ArrayList<>(1);
+            attrs = new ArrayList<Attribute>(1);
         }
         attrs.add(attr);
     }
@@ -244,7 +247,7 @@ public class FieldNode extends FieldVisitor {
      * This methods checks that this node, and all its nodes recursively, do not
      * contain elements that were introduced in more recent versions of the ASM
      * API than the given version.
-     *
+     * 
      * @param api
      *            an ASM API version. Must be one of {@link Opcodes#ASM4} or
      *            {@link Opcodes#ASM5}.
@@ -264,7 +267,7 @@ public class FieldNode extends FieldVisitor {
 
     /**
      * Makes the given class visitor visit this field.
-     *
+     * 
      * @param cv
      *            a class visitor.
      */
@@ -302,8 +305,5 @@ public class FieldNode extends FieldVisitor {
             fv.visitAttribute(attrs.get(i));
         }
         fv.visitEnd();
-    }
-    public Handle getHandle() {
-        return new Handle(0, parent.name, name, desc);
     }
 }

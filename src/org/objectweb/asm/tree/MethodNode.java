@@ -29,12 +29,19 @@
  */
 package org.objectweb.asm.tree;
 
-import org.objectweb.asm.*;
-
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.TypePath;
 
 /**
  * A node that represents a method.
@@ -42,6 +49,8 @@ import java.util.List;
  * @author Eric Bruneton
  */
 public class MethodNode extends MethodVisitor {
+
+    public ClassNode owner;
 
     /**
      * The method's access flags (see {@link Opcodes}). This field also
@@ -175,8 +184,6 @@ public class MethodNode extends MethodVisitor {
      */
     public int maxLocals;
 
-    public boolean isOverride;
-
     /**
      * The local variables of this method. This list is a list of
      * {@link LocalVariableNode} objects. May be <tt>null</tt>
@@ -206,17 +213,18 @@ public class MethodNode extends MethodVisitor {
      */
     private boolean visited;
 
-    public ClassNode parent;
-
-    public int referenceCount = 0;
-
     /**
      * Constructs an uninitialized {@link MethodNode}. <i>Subclasses must not
      * use this constructor</i>. Instead, they must use the
      * {@link #MethodNode(int)} version.
+     *
+     * @throws IllegalStateException If a subclass calls this constructor.
      */
     public MethodNode() {
         this(Opcodes.ASM5);
+        if (getClass() != MethodNode.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -244,10 +252,14 @@ public class MethodNode extends MethodVisitor {
      * @param exceptions the internal names of the method's exception classes (see
      *                   {@link Type#getInternalName() getInternalName}). May be
      *                   <tt>null</tt>.
+     * @throws IllegalStateException If a subclass calls this constructor.
      */
     public MethodNode(final int access, final String name, final String desc,
                       final String signature, final String[] exceptions) {
         this(Opcodes.ASM5, access, name, desc, signature, exceptions);
+        if (getClass() != MethodNode.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -272,13 +284,13 @@ public class MethodNode extends MethodVisitor {
         this.name = name;
         this.desc = desc;
         this.signature = signature;
-        this.exceptions = new ArrayList<>(exceptions == null ? 0
+        this.exceptions = new ArrayList<String>(exceptions == null ? 0
                 : exceptions.length);
         boolean isAbstract = (access & Opcodes.ACC_ABSTRACT) != 0;
         if (!isAbstract) {
-            this.localVariables = new ArrayList<>(5);
+            this.localVariables = new ArrayList<LocalVariableNode>(5);
         }
-        this.tryCatchBlocks = new ArrayList<>();
+        this.tryCatchBlocks = new ArrayList<TryCatchBlockNode>();
         if (exceptions != null) {
             this.exceptions.addAll(Arrays.asList(exceptions));
         }
@@ -286,12 +298,9 @@ public class MethodNode extends MethodVisitor {
     }
 
     public Handle getHandle() {
-        return new Handle(0, parent.name, name, desc);
+        return new Handle(0, owner.name, name, desc, false);
     }
 
-    public void setParent(ClassNode node) {
-        parent = node;
-    }
 
     // ------------------------------------------------------------------------
     // Implementation of the MethodVisitor abstract class
@@ -300,12 +309,13 @@ public class MethodNode extends MethodVisitor {
     @Override
     public void visitParameter(String name, int access) {
         if (parameters == null) {
-            parameters = new ArrayList<>(5);
+            parameters = new ArrayList<ParameterNode>(5);
         }
         parameters.add(new ParameterNode(name, access));
     }
 
     @Override
+    @SuppressWarnings("serial")
     public AnnotationVisitor visitAnnotationDefault() {
         return new AnnotationNode(new ArrayList<Object>(0) {
             @Override
@@ -322,12 +332,12 @@ public class MethodNode extends MethodVisitor {
         AnnotationNode an = new AnnotationNode(desc);
         if (visible) {
             if (visibleAnnotations == null) {
-                visibleAnnotations = new ArrayList<>(1);
+                visibleAnnotations = new ArrayList<AnnotationNode>(1);
             }
             visibleAnnotations.add(an);
         } else {
             if (invisibleAnnotations == null) {
-                invisibleAnnotations = new ArrayList<>(1);
+                invisibleAnnotations = new ArrayList<AnnotationNode>(1);
             }
             invisibleAnnotations.add(an);
         }
@@ -340,12 +350,12 @@ public class MethodNode extends MethodVisitor {
         TypeAnnotationNode an = new TypeAnnotationNode(typeRef, typePath, desc);
         if (visible) {
             if (visibleTypeAnnotations == null) {
-                visibleTypeAnnotations = new ArrayList<>(1);
+                visibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(1);
             }
             visibleTypeAnnotations.add(an);
         } else {
             if (invisibleTypeAnnotations == null) {
-                invisibleTypeAnnotations = new ArrayList<>(1);
+                invisibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(1);
             }
             invisibleTypeAnnotations.add(an);
         }
@@ -353,6 +363,7 @@ public class MethodNode extends MethodVisitor {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
                                                       final String desc, final boolean visible) {
         AnnotationNode an = new AnnotationNode(desc);
@@ -362,7 +373,7 @@ public class MethodNode extends MethodVisitor {
                 visibleParameterAnnotations = (List<AnnotationNode>[]) new List<?>[params];
             }
             if (visibleParameterAnnotations[parameter] == null) {
-                visibleParameterAnnotations[parameter] = new ArrayList<>(
+                visibleParameterAnnotations[parameter] = new ArrayList<AnnotationNode>(
                         1);
             }
             visibleParameterAnnotations[parameter].add(an);
@@ -372,7 +383,7 @@ public class MethodNode extends MethodVisitor {
                 invisibleParameterAnnotations = (List<AnnotationNode>[]) new List<?>[params];
             }
             if (invisibleParameterAnnotations[parameter] == null) {
-                invisibleParameterAnnotations[parameter] = new ArrayList<>(
+                invisibleParameterAnnotations[parameter] = new ArrayList<AnnotationNode>(
                         1);
             }
             invisibleParameterAnnotations[parameter].add(an);
@@ -383,7 +394,7 @@ public class MethodNode extends MethodVisitor {
     @Override
     public void visitAttribute(final Attribute attr) {
         if (attrs == null) {
-            attrs = new ArrayList<>(1);
+            attrs = new ArrayList<Attribute>(1);
         }
         attrs.add(attr);
     }
@@ -426,10 +437,25 @@ public class MethodNode extends MethodVisitor {
         instructions.add(new FieldInsnNode(opcode, owner, name, desc));
     }
 
+    @Deprecated
     @Override
-    public void visitMethodInsn(final int opcode, final String owner,
-                                final String name, final String desc) {
+    public void visitMethodInsn(int opcode, String owner, String name,
+                                String desc) {
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
         instructions.add(new MethodInsnNode(opcode, owner, name, desc));
+    }
+
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name,
+                                String desc, boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        instructions.add(new MethodInsnNode(opcode, owner, name, desc, itf));
     }
 
     @Override
@@ -490,13 +516,13 @@ public class MethodNode extends MethodVisitor {
         TypeAnnotationNode an = new TypeAnnotationNode(typeRef, typePath, desc);
         if (visible) {
             if (insn.visibleTypeAnnotations == null) {
-                insn.visibleTypeAnnotations = new ArrayList<>(
+                insn.visibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(
                         1);
             }
             insn.visibleTypeAnnotations.add(an);
         } else {
             if (insn.invisibleTypeAnnotations == null) {
-                insn.invisibleTypeAnnotations = new ArrayList<>(
+                insn.invisibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(
                         1);
             }
             insn.invisibleTypeAnnotations.add(an);
@@ -518,13 +544,13 @@ public class MethodNode extends MethodVisitor {
         TypeAnnotationNode an = new TypeAnnotationNode(typeRef, typePath, desc);
         if (visible) {
             if (tcb.visibleTypeAnnotations == null) {
-                tcb.visibleTypeAnnotations = new ArrayList<>(
+                tcb.visibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(
                         1);
             }
             tcb.visibleTypeAnnotations.add(an);
         } else {
             if (tcb.invisibleTypeAnnotations == null) {
-                tcb.invisibleTypeAnnotations = new ArrayList<>(
+                tcb.invisibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(
                         1);
             }
             tcb.invisibleTypeAnnotations.add(an);
@@ -549,13 +575,13 @@ public class MethodNode extends MethodVisitor {
                 index, desc);
         if (visible) {
             if (visibleLocalVariableAnnotations == null) {
-                visibleLocalVariableAnnotations = new ArrayList<>(
+                visibleLocalVariableAnnotations = new ArrayList<LocalVariableAnnotationNode>(
                         1);
             }
             visibleLocalVariableAnnotations.add(an);
         } else {
             if (invisibleLocalVariableAnnotations == null) {
-                invisibleLocalVariableAnnotations = new ArrayList<>(
+                invisibleLocalVariableAnnotations = new ArrayList<LocalVariableAnnotationNode>(
                         1);
             }
             invisibleLocalVariableAnnotations.add(an);
@@ -659,6 +685,12 @@ public class MethodNode extends MethodVisitor {
                         && insn.invisibleTypeAnnotations.size() > 0) {
                     throw new RuntimeException();
                 }
+                if (insn instanceof MethodInsnNode) {
+                    boolean itf = ((MethodInsnNode) insn).itf;
+                    if (itf != (insn.opcode == Opcodes.INVOKEINTERFACE)) {
+                        throw new RuntimeException();
+                    }
+                }
             }
             if (visibleLocalVariableAnnotations != null
                     && visibleLocalVariableAnnotations.size() > 0) {
@@ -668,7 +700,6 @@ public class MethodNode extends MethodVisitor {
                     && invisibleLocalVariableAnnotations.size() > 0) {
                 throw new RuntimeException();
             }
-
         }
     }
 

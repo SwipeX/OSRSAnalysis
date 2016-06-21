@@ -113,25 +113,26 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
                     typePath.toString());
         }
         if (start != null) {
-            String value = start[0];
+            StringBuilder value = new StringBuilder(start[0]);
             for (int i = 1; i < start.length; ++i) {
-                value = value + " " + start[i];
+                value.append(" ").append(start[i]);
             }
-            att.addAttribute("", "start", "start", "", value);
+            att.addAttribute("", "start", "start", "", value.toString());
         }
         if (end != null) {
-            String value = end[0];
+            StringBuilder value = new StringBuilder(end[0]);
             for (int i = 1; i < end.length; ++i) {
-                value = value + " " + end[i];
+                value.append(" ").append(end[i]);
             }
-            att.addAttribute("", "end", "end", "", value);
+            att.addAttribute("", "end", "end", "", value.toString());
         }
         if (index != null) {
-            String value = Integer.toString(index[0]);
+            StringBuilder value = new StringBuilder();
+            value.append(index[0]);
             for (int i = 1; i < index.length; ++i) {
-                value = value + " " + Integer.toString(index[i]);
+                value.append(" ").append(index[i]);
             }
-            att.addAttribute("", "index", "index", "", value);
+            att.addAttribute("", "index", "index", "", value.toString());
         }
 
         sa.addStart(elementName, att);
@@ -144,50 +145,50 @@ public final class SAXAnnotationAdapter extends AnnotationVisitor {
             AnnotationVisitor av = visitArray(name);
             if (value instanceof byte[]) {
                 byte[] b = (byte[]) value;
-                for (byte aB : b) {
-                    av.visit(null, new Byte(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof char[]) {
                 char[] b = (char[]) value;
-                for (char aB : b) {
-                    av.visit(null, new Character(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof short[]) {
                 short[] b = (short[]) value;
-                for (short aB : b) {
-                    av.visit(null, new Short(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof boolean[]) {
                 boolean[] b = (boolean[]) value;
-                for (boolean aB : b) {
-                    av.visit(null, Boolean.valueOf(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, Boolean.valueOf(b[i]));
                 }
 
             } else if (value instanceof int[]) {
                 int[] b = (int[]) value;
-                for (int aB : b) {
-                    av.visit(null, new Integer(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof long[]) {
                 long[] b = (long[]) value;
-                for (long aB : b) {
-                    av.visit(null, new Long(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof float[]) {
                 float[] b = (float[]) value;
-                for (float aB : b) {
-                    av.visit(null, new Float(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             } else if (value instanceof double[]) {
                 double[] b = (double[]) value;
-                for (double aB : b) {
-                    av.visit(null, new Double(aB));
+                for (int i = 0; i < b.length; i++) {
+                    av.visit(null, b[i]);
                 }
 
             }

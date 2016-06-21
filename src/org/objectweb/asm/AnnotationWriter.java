@@ -138,50 +138,50 @@ final class AnnotationWriter extends AnnotationVisitor {
         } else if (value instanceof byte[]) {
             byte[] v = (byte[]) value;
             bv.put12('[', v.length);
-            for (byte aV : v) {
-                bv.put12('B', cw.newInteger(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('B', cw.newInteger(v[i]).index);
             }
         } else if (value instanceof boolean[]) {
             boolean[] v = (boolean[]) value;
             bv.put12('[', v.length);
-            for (boolean aV : v) {
-                bv.put12('Z', cw.newInteger(aV ? 1 : 0).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('Z', cw.newInteger(v[i] ? 1 : 0).index);
             }
         } else if (value instanceof short[]) {
             short[] v = (short[]) value;
             bv.put12('[', v.length);
-            for (short aV : v) {
-                bv.put12('S', cw.newInteger(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('S', cw.newInteger(v[i]).index);
             }
         } else if (value instanceof char[]) {
             char[] v = (char[]) value;
             bv.put12('[', v.length);
-            for (char aV : v) {
-                bv.put12('C', cw.newInteger(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('C', cw.newInteger(v[i]).index);
             }
         } else if (value instanceof int[]) {
             int[] v = (int[]) value;
             bv.put12('[', v.length);
-            for (int aV : v) {
-                bv.put12('I', cw.newInteger(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('I', cw.newInteger(v[i]).index);
             }
         } else if (value instanceof long[]) {
             long[] v = (long[]) value;
             bv.put12('[', v.length);
-            for (long aV : v) {
-                bv.put12('J', cw.newLong(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('J', cw.newLong(v[i]).index);
             }
         } else if (value instanceof float[]) {
             float[] v = (float[]) value;
             bv.put12('[', v.length);
-            for (float aV : v) {
-                bv.put12('F', cw.newFloat(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('F', cw.newFloat(v[i]).index);
             }
         } else if (value instanceof double[]) {
             double[] v = (double[]) value;
             bv.put12('[', v.length);
-            for (double aV : v) {
-                bv.put12('D', cw.newDouble(aV).index);
+            for (int i = 0; i < v.length; i++) {
+                bv.put12('D', cw.newDouble(v[i]).index);
             }
         } else {
             Item i = cw.newConstItem(value);
@@ -355,8 +355,8 @@ final class AnnotationWriter extends AnnotationVisitor {
         // case 0x42: // EXCEPTION_PARAMETER
         // case 0x43: // INSTANCEOF
         // case 0x44: // NEW
-        // case 0x45: // CONSTRUCTOR_REFERENCE_RECEIVER
-        // case 0x46: // METHOD_REFERENCE_RECEIVER
+        // case 0x45: // CONSTRUCTOR_REFERENCE
+        // case 0x46: // METHOD_REFERENCE
         default:
             out.put12(typeRef >>> 24, (typeRef & 0xFFFF00) >> 8);
             break;

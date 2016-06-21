@@ -114,11 +114,6 @@ public class CheckMethodAdapter extends MethodVisitor {
     private Set<Label> usedLabels;
 
     /**
-     * If an explicit first frame has been visited before the first instruction.
-     */
-    private boolean hasExplicitFirstFrame;
-
-    /**
      * Number of visited frames in expanded form.
      */
     private int expandedFrames;
@@ -127,6 +122,11 @@ public class CheckMethodAdapter extends MethodVisitor {
      * Number of visited frames in compressed form.
      */
     private int compressedFrames;
+
+    /**
+     * Number of instructions before the last visited frame.
+     */
+    private int lastFrame = -1;
 
     /**
      * The exception handler ranges. Each pair of list element contains the
@@ -378,7 +378,7 @@ public class CheckMethodAdapter extends MethodVisitor {
      *            the method visitor to which this adapter must delegate calls.
      */
     public CheckMethodAdapter(final MethodVisitor mv) {
-        this(mv, new HashMap<>());
+        this(mv, new HashMap<Label, Integer>());
     }
 
     /**
@@ -392,10 +392,15 @@ public class CheckMethodAdapter extends MethodVisitor {
      *            the method visitor to which this adapter must delegate calls.
      * @param labels
      *            a map of already visited labels (in other methods).
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public CheckMethodAdapter(final MethodVisitor mv,
             final Map<Label, Integer> labels) {
         this(Opcodes.ASM5, mv, labels);
+        if (getClass() != CheckMethodAdapter.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -403,6 +408,9 @@ public class CheckMethodAdapter extends MethodVisitor {
      * will not perform any data flow check (see
      * {@link #CheckMethodAdapter(int,String,String,MethodVisitor,Map)}).
      * 
+     * @param api
+     *            the ASM API version implemented by this CheckMethodAdapter.
+     *            Must be one of {@link Opcodes#ASM4} or {@link Opcodes#ASM5}.
      * @param mv
      *            the method visitor to which this adapter must delegate calls.
      * @param labels
@@ -412,8 +420,8 @@ public class CheckMethodAdapter extends MethodVisitor {
             final Map<Label, Integer> labels) {
         super(api, mv);
         this.labels = labels;
-        this.usedLabels = new HashSet<>();
-        this.handlers = new ArrayList<>();
+        this.usedLabels = new HashSet<Label>();
+        this.handlers = new ArrayList<Label>();
     }
 
     /**
@@ -436,10 +444,10 @@ public class CheckMethodAdapter extends MethodVisitor {
     public CheckMethodAdapter(final int access, final String name,
             final String desc, final MethodVisitor cmv,
             final Map<Label, Integer> labels) {
-        this(new MethodNode(access, name, desc, null, null) {
+        this(new MethodNode(Opcodes.ASM5, access, name, desc, null, null) {
             @Override
             public void visitEnd() {
-                Analyzer<BasicValue> a = new Analyzer<>(
+                Analyzer<BasicValue> a = new Analyzer<BasicValue>(
                         new BasicVerifier());
                 try {
                     a.analyze("dummy", this);
@@ -470,6 +478,7 @@ public class CheckMethodAdapter extends MethodVisitor {
         }
         CheckClassAdapter.checkAccess(access, Opcodes.ACC_FINAL
                 + Opcodes.ACC_MANDATED + Opcodes.ACC_SYNTHETIC);
+        super.visitParameter(name, access);
     }
 
     @Override
@@ -537,6 +546,11 @@ public class CheckMethodAdapter extends MethodVisitor {
     @Override
     public void visitFrame(final int type, final int nLocal,
             final Object[] local, final int nStack, final Object[] stack) {
+        if (insnCount == lastFrame) {
+            throw new IllegalStateException(
+                    "At most one frame can be visited at a given code location.");
+        }
+        lastFrame = insnCount;
         int mLocal;
         int mStack;
         switch (type) {
@@ -592,13 +606,6 @@ public class CheckMethodAdapter extends MethodVisitor {
             checkFrameValue(stack[i]);
         }
         if (type == Opcodes.F_NEW) {
-            if (insnCount == 0) {
-                hasExplicitFirstFrame = true;
-            } else if (!hasExplicitFirstFrame) {
-                throw new RuntimeException(
-                        "In expanded form, a first frame must be explicitly "
-                                + "visited before the first instruction.");
-            }
             ++expandedFrames;
         } else {
             ++compressedFrames;
@@ -680,9 +687,30 @@ public class CheckMethodAdapter extends MethodVisitor {
         ++insnCount;
     }
 
+    @Deprecated
     @Override
-    public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+    public void visitMethodInsn(int opcode, String owner, String name,
+            String desc) {
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc,
+                opcode == Opcodes.INVOKEINTERFACE);
+    }
+
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name,
+            String desc, boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc, itf);
+    }
+
+    private void doVisitMethodInsn(int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
         checkStartCode();
         checkEndCode();
         checkOpcode(opcode, 5);
@@ -691,7 +719,21 @@ public class CheckMethodAdapter extends MethodVisitor {
         }
         checkInternalName(owner, "owner");
         checkMethodDesc(desc);
-        super.visitMethodInsn(opcode, owner, name, desc);
+        if (opcode == Opcodes.INVOKEVIRTUAL && itf) {
+            throw new IllegalArgumentException(
+                    "INVOKEVIRTUAL can't be used with interfaces");
+        }
+        if (opcode == Opcodes.INVOKEINTERFACE && !itf) {
+            throw new IllegalArgumentException(
+                    "INVOKEINTERFACE can't be used with classes");
+        }
+        // Calling super.visitMethodInsn requires to call the correct version
+        // depending on this.api (otherwise infinite loops can occur). To
+        // simplify and to make it easier to automatically remove the backward
+        // compatibility code, we inline the code of the overridden method here.
+        if (mv != null) {
+            mv.visitMethodInsn(opcode, owner, name, desc, itf);
+        }
         ++insnCount;
     }
 
@@ -707,8 +749,8 @@ public class CheckMethodAdapter extends MethodVisitor {
             throw new IllegalArgumentException("invalid handle tag "
                     + bsm.getTag());
         }
-        for (Object bsmArg : bsmArgs) {
-            checkLDCConstant(bsmArg);
+        for (int i = 0; i < bsmArgs.length; i++) {
+            checkLDCConstant(bsmArgs[i]);
         }
         super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
         ++insnCount;
@@ -734,7 +776,7 @@ public class CheckMethodAdapter extends MethodVisitor {
         if (labels.get(label) != null) {
             throw new IllegalArgumentException("Already visited label");
         }
-        labels.put(label, new Integer(insnCount));
+        labels.put(label, insnCount);
         super.visitLabel(label);
     }
 
@@ -777,8 +819,8 @@ public class CheckMethodAdapter extends MethodVisitor {
             checkNonDebugLabel(labels[i]);
         }
         super.visitTableSwitchInsn(min, max, dflt, labels);
-        for (Label label : labels) {
-            usedLabels.add(label);
+        for (int i = 0; i < labels.length; ++i) {
+            usedLabels.add(labels[i]);
         }
         ++insnCount;
     }
@@ -800,8 +842,8 @@ public class CheckMethodAdapter extends MethodVisitor {
         }
         super.visitLookupSwitchInsn(dflt, keys, labels);
         usedLabels.add(dflt);
-        for (Label label : labels) {
-            usedLabels.add(label);
+        for (int i = 0; i < labels.length; ++i) {
+            usedLabels.add(labels[i]);
         }
         ++insnCount;
     }
@@ -836,8 +878,8 @@ public class CheckMethodAdapter extends MethodVisitor {
         checkEndCode();
         int sort = typeRef >>> 24;
         if (sort != TypeReference.INSTANCEOF && sort != TypeReference.NEW
-                && sort != TypeReference.CONSTRUCTOR_REFERENCE_RECEIVER
-                && sort != TypeReference.METHOD_REFERENCE_RECEIVER
+                && sort != TypeReference.CONSTRUCTOR_REFERENCE
+                && sort != TypeReference.METHOD_REFERENCE
                 && sort != TypeReference.CAST
                 && sort != TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT
                 && sort != TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT
@@ -1308,7 +1350,7 @@ public class CheckMethodAdapter extends MethodVisitor {
                 checkIdentifier(name, begin, slash, null);
                 begin = slash + 1;
             } while (slash != max);
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException unused) {
             throw new IllegalArgumentException(
                     "Invalid "
                             + msg
@@ -1386,7 +1428,7 @@ public class CheckMethodAdapter extends MethodVisitor {
             }
             try {
                 checkInternalName(desc, start + 1, index, null);
-            } catch (IllegalArgumentException _) {
+            } catch (IllegalArgumentException unused) {
                 throw new IllegalArgumentException("Invalid descriptor: "
                         + desc);
             }

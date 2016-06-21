@@ -1,89 +1,103 @@
 package pw.tdekk.deob;
 
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
 import pw.tdekk.Application;
-import pw.tdekk.deob.data.CallGraph;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static pw.tdekk.Application.archive;
+import java.util.stream.Collectors;
 
 /**
- * Created by TimD on 6/20/2016.
+ * Created by TimD on 6/21/2016.
  */
-public class UnusedMethods implements AbstractTransform {
-    private int fremoved, mremoved;
-    private List<Handle> calledFields;
+public class UnusedMethods implements Mutator {
+    private ArrayList<Handle> usedMethods = new ArrayList<>();
+    private int removedCount = 0;
 
     @Override
-    public void transform() {
-        CallGraph callGraph = new CallGraph();
-        callGraph.build();
-        for (ClassNode classNode : archive.classes().values()) {
-            Application.methodCount += classNode.methods.size();
-            Application.fieldCount += classNode.fields.size();
-            classNode.accept(new ClassVisitor(Opcodes.ASM5) {
-                @Override
-                public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-                    archive.classes().values().stream().filter(c -> c.superName.equals(classNode.name)).forEach(cn -> {
-                        MethodNode node = cn.getMethod(name, desc);
-                        if (node != null) {
-                            callGraph.getCalledMethods().add(node.getHandle());
-                        }
-                    });
-                    if ((access & Opcodes.ACC_ABSTRACT) == Opcodes.ACC_ABSTRACT) {
-                        callGraph.getCalledMethods().add(new Handle(0, classNode.name, name, desc));
-                    }
-                    MethodNode node = classNode.getMethod(name, desc);
-                    if(node.isOverride)
-                        callGraph.getCalledMethods().add(node.getHandle());
-                    return super.visitMethod(access, name, desc, signature, exceptions);
-                }
-            });
-
-        }
-
-
-        calledFields = new ArrayList<>();
-        for (Handle handle : callGraph.getCalledMethods()) {
-            MethodNode mn = archive.classes().get(handle.getOwner()).getMethod(handle.getName(), handle.getDesc());
-            mn.accept(new MethodVisitor(Opcodes.ASM5) {
-                @Override
-                public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                    ClassNode node = archive.classes().get(owner);
-                    if (node != null) {
-                        FieldNode fn = node.getField(name, desc);
-                        if (fn != null) {
-                            calledFields.add(fn.getHandle());
-                        }
-                    }
-                    super.visitFieldInsn(opcode, owner, name, desc);
-                }
-            });
-        }
-        archive.classes().values().forEach(cn -> {
-            cn.methods.forEach(mn -> {
-                if (!callGraph.getCalledMethods().contains(mn.getHandle())) {
-                    cn.methods.remove(mn);
-                    mremoved++;
-                }
-            });
-            cn.fields.forEach(fn -> {
-                if (!calledFields.contains(fn.getHandle())) {
-                    cn.fields.remove(fn);
-                    fremoved++;
-                }
-            });
+    public void mutate() {
+        long startTime = System.currentTimeMillis();
+        getEntryPoints().forEach(this::visit);
+        ArrayList<MethodNode> toRemove = new ArrayList<>();
+        Application.getClasses().values().forEach(c -> c.methods.forEach(m -> {
+            if (!usedMethods.contains(m.getHandle())) {
+                toRemove.add(m);
+            }
+        }));
+        toRemove.forEach(m -> {
+            m.owner.methods.remove(m);
+            removedCount++;
         });
-        System.out.println("Removed " + mremoved + " unused methods");
-        System.out.println("Removed " + fremoved + " unused fields");
+        System.out.println(String.format("Removed %s methods in %s ms", removedCount, (System.currentTimeMillis() - startTime)));
+    }
+
+    private void visit(MethodNode mn) {
+        Handle handle = mn.getHandle();
+        if (usedMethods.contains(handle)) return;
+        usedMethods.add(handle);
+        //subclass methods
+        if ((mn.access & Opcodes.ACC_ABSTRACT) == Opcodes.ACC_ABSTRACT) {
+            Application.getClasses().values().stream().filter(node -> node.superName.equals(mn.owner.name)).forEach(node -> {
+                MethodNode sub = node.getMethod(mn.name, mn.desc);
+                if (sub != null)
+                    visit(sub);
+            });
+        }
+        mn.accept(new MethodVisitor(Opcodes.ASM5) {
+            @Override
+            public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                if (Application.getClasses().containsKey(owner)) {
+                    ClassNode node = Application.getClasses().get(owner);
+                    MethodNode method = node.getMethod(name, desc);
+                    if (method != null) {
+                        visit(method);
+                        String superName = node.superName;
+                        if (Application.getClasses().containsKey(superName)) {
+                            ClassNode superClass = Application.getClasses().get(superName);
+                            MethodNode superMethod = superClass.getMethod(name, desc);
+                            if (superMethod != null) {
+                                visit(superMethod);
+                            }
+                        }
+                    }
+                }
+                super.visitMethodInsn(opcode, owner, name, desc, itf);
+            }
+        });
+    }
+
+
+    public List<MethodNode> getEntryPoints() {
+        ArrayList<MethodNode> entry = new ArrayList<>();
+        Application.getClasses().values().forEach(node -> {
+            //All methods > 2 length for osrs obfuscator
+            entry.addAll(node.methods.stream().filter(m -> m.name.length() > 2).collect(Collectors.toList()));
+            //Any subclass methods should be added
+            String superName = node.superName;
+            if (Application.getClasses().containsKey(superName)) {
+                for (MethodNode method : node.methods) {
+                    entry.addAll(Application.getClasses().get(superName).methods.stream().filter(m ->
+                            m.name.equals(method.name) && m.desc.equals(method.desc)).collect(Collectors.toList()));
+                }
+            }
+            //interface methods
+            List<String> interfaces = node.interfaces;
+            for (String iface : interfaces) {
+                ClassNode impl = Application.getClasses().get(iface);
+                if (impl != null) {
+                    for (MethodNode mn : node.methods) {
+                        impl.methods.stream().filter(imn -> mn.name.equals(imn.name) && mn.desc.equals(imn.desc)).forEach(imn -> {
+                            entry.add(mn);
+                            entry.add(imn);
+                        });
+                    }
+                }
+            }
+        });
+        return entry;
     }
 }

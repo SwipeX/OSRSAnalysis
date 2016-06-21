@@ -108,7 +108,7 @@ import org.objectweb.asm.tree.analysis.SimpleVerifier;
  * 00071 LinkedBlockingQueue$Itr <b>.</b> I . . . . . .  :
  *   ILOAD 1
  * 00072 <b>?</b>
- *   INVOKESPECIAL java/lang/Integer.<init> (I)V
+ *   INVOKESPECIAL java/lang/Integer.&lt;init&gt; (I)V
  * ...
  * </pre>
  * 
@@ -187,7 +187,7 @@ public class CheckClassAdapter extends ClassVisitor {
             cr = new ClassReader(args[0]);
         }
 
-        verify(cr, true, new PrintWriter(System.err));
+        verify(cr, false, new PrintWriter(System.err));
     }
 
     /**
@@ -215,16 +215,17 @@ public class CheckClassAdapter extends ClassVisitor {
                 .getObjectType(cn.superName);
         List<MethodNode> methods = cn.methods;
 
-        List<Type> interfaces = new ArrayList<>();
-        for (String anInterface : cn.interfaces) {
-            interfaces.add(Type.getObjectType(anInterface.toString()));
+        List<Type> interfaces = new ArrayList<Type>();
+        for (Iterator<String> i = cn.interfaces.iterator(); i.hasNext();) {
+            interfaces.add(Type.getObjectType(i.next()));
         }
 
-        for (MethodNode method : methods) {
+        for (int i = 0; i < methods.size(); ++i) {
+            MethodNode method = methods.get(i);
             SimpleVerifier verifier = new SimpleVerifier(
                     Type.getObjectType(cn.name), syperType, interfaces,
                     (cn.access & Opcodes.ACC_INTERFACE) != 0);
-            Analyzer<BasicValue> a = new Analyzer<>(verifier);
+            Analyzer<BasicValue> a = new Analyzer<BasicValue>(verifier);
             if (loader != null) {
                 verifier.setClassLoader(loader);
             }
@@ -268,26 +269,26 @@ public class CheckClassAdapter extends ClassVisitor {
         for (int j = 0; j < method.instructions.size(); ++j) {
             method.instructions.get(j).accept(mv);
 
-            StringBuffer s = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             Frame<BasicValue> f = frames[j];
             if (f == null) {
-                s.append('?');
+                sb.append('?');
             } else {
                 for (int k = 0; k < f.getLocals(); ++k) {
-                    s.append(getShortName(f.getLocal(k).toString()))
+                    sb.append(getShortName(f.getLocal(k).toString()))
                             .append(' ');
                 }
-                s.append(" : ");
+                sb.append(" : ");
                 for (int k = 0; k < f.getStackSize(); ++k) {
-                    s.append(getShortName(f.getStack(k).toString()))
+                    sb.append(getShortName(f.getStack(k).toString()))
                             .append(' ');
                 }
             }
-            while (s.length() < method.maxStack + method.maxLocals + 1) {
-                s.append(' ');
+            while (sb.length() < method.maxStack + method.maxLocals + 1) {
+                sb.append(' ');
             }
             pw.print(Integer.toString(j + 100000).substring(1));
-            pw.print(" " + s + " : " + t.text.get(t.text.size() - 1));
+            pw.print(" " + sb + " : " + t.text.get(t.text.size() - 1));
         }
         for (int j = 0; j < method.tryCatchBlocks.size(); ++j) {
             method.tryCatchBlocks.get(j).accept(mv);
@@ -329,9 +330,14 @@ public class CheckClassAdapter extends ClassVisitor {
      *            <tt>false</tt> to not perform any data flow check (see
      *            {@link CheckMethodAdapter}). This option requires valid
      *            maxLocals and maxStack values.
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public CheckClassAdapter(final ClassVisitor cv, final boolean checkDataFlow) {
         this(Opcodes.ASM5, cv, checkDataFlow);
+        if (getClass() != CheckClassAdapter.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -351,7 +357,7 @@ public class CheckClassAdapter extends ClassVisitor {
     protected CheckClassAdapter(final int api, final ClassVisitor cv,
             final boolean checkDataFlow) {
         super(api, cv);
-        this.labels = new HashMap<>();
+        this.labels = new HashMap<Label, Integer>();
         this.checkDataFlow = checkDataFlow;
     }
 
@@ -441,7 +447,15 @@ public class CheckClassAdapter extends ClassVisitor {
             CheckMethodAdapter.checkInternalName(outerName, "outer class name");
         }
         if (innerName != null) {
-            CheckMethodAdapter.checkIdentifier(innerName, "inner class name");
+            int start = 0;
+            while (start < innerName.length()
+                    && Character.isDigit(innerName.charAt(start))) {
+                start++;
+            }
+            if (start == 0 || start < innerName.length()) {
+                CheckMethodAdapter.checkIdentifier(innerName, start, -1,
+                        "inner class name");
+            }
         }
         checkAccess(access, Opcodes.ACC_PUBLIC + Opcodes.ACC_PRIVATE
                 + Opcodes.ACC_PROTECTED + Opcodes.ACC_STATIC
@@ -703,8 +717,8 @@ public class CheckClassAdapter extends ClassVisitor {
         case TypeReference.RESOURCE_VARIABLE:
         case TypeReference.INSTANCEOF:
         case TypeReference.NEW:
-        case TypeReference.CONSTRUCTOR_REFERENCE_RECEIVER:
-        case TypeReference.METHOD_REFERENCE_RECEIVER:
+        case TypeReference.CONSTRUCTOR_REFERENCE:
+        case TypeReference.METHOD_REFERENCE:
             mask = 0xFF000000;
             break;
         case TypeReference.CLASS_EXTENDS:

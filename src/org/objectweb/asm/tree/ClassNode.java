@@ -29,13 +29,18 @@
  */
 package org.objectweb.asm.tree;
 
-import org.objectweb.asm.*;
-import pw.tdekk.Application;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.TypePath;
+import pw.tdekk.Application;
 
 /**
  * A node that represents a class.
@@ -183,9 +188,14 @@ public class ClassNode extends ClassVisitor {
      * Constructs a new {@link ClassNode}. <i>Subclasses must not use this
      * constructor</i>. Instead, they must use the {@link #ClassNode(int)}
      * version.
+     *
+     * @throws IllegalStateException If a subclass calls this constructor.
      */
     public ClassNode() {
         this(Opcodes.ASM5);
+        if (getClass() != ClassNode.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -196,38 +206,10 @@ public class ClassNode extends ClassVisitor {
      */
     public ClassNode(final int api) {
         super(api);
-        this.interfaces = new CopyOnWriteArrayList<>();
-        this.innerClasses = new CopyOnWriteArrayList<>();
-        this.fields = new CopyOnWriteArrayList<>();
-        this.methods = new CopyOnWriteArrayList<>();
-    }
-
-    public MethodNode getMethod(String name, String desc) {
-        for (MethodNode mn : methods) {
-            if (mn.name.equals(name) && mn.desc.equals(desc))
-                return mn;
-        }
-        ClassNode parent = Application.archive.classes().get(superName);
-        if (parent != null && !parent.name.startsWith("java/")) {
-            return parent.getMethod(name, desc);
-        }
-        return null;
-    }
-
-    public FieldNode getField(String name, String desc) {
-        for (FieldNode fn : fields) {
-            if (fn.name.equals(name) && fn.desc.equals(desc))
-                return fn;
-        }
-        ClassNode parent = Application.archive.classes().get(superName);
-        if (parent != null && !parent.name.equals("java/lang/Object")) {
-            return parent.getField(name, desc);
-        }
-        return null;
-    }
-
-    public ClassNode getSuperClass() {
-        return Application.archive.classes().get(superName);
+        this.interfaces = new ArrayList<String>();
+        this.innerClasses = new ArrayList<InnerClassNode>();
+        this.fields = new ArrayList<FieldNode>();
+        this.methods = new ArrayList<MethodNode>();
     }
 
     // ------------------------------------------------------------------------
@@ -268,12 +250,12 @@ public class ClassNode extends ClassVisitor {
         AnnotationNode an = new AnnotationNode(desc);
         if (visible) {
             if (visibleAnnotations == null) {
-                visibleAnnotations = new ArrayList<>(1);
+                visibleAnnotations = new ArrayList<AnnotationNode>(1);
             }
             visibleAnnotations.add(an);
         } else {
             if (invisibleAnnotations == null) {
-                invisibleAnnotations = new ArrayList<>(1);
+                invisibleAnnotations = new ArrayList<AnnotationNode>(1);
             }
             invisibleAnnotations.add(an);
         }
@@ -286,12 +268,12 @@ public class ClassNode extends ClassVisitor {
         TypeAnnotationNode an = new TypeAnnotationNode(typeRef, typePath, desc);
         if (visible) {
             if (visibleTypeAnnotations == null) {
-                visibleTypeAnnotations = new ArrayList<>(1);
+                visibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(1);
             }
             visibleTypeAnnotations.add(an);
         } else {
             if (invisibleTypeAnnotations == null) {
-                invisibleTypeAnnotations = new ArrayList<>(1);
+                invisibleTypeAnnotations = new ArrayList<TypeAnnotationNode>(1);
             }
             invisibleTypeAnnotations.add(an);
         }
@@ -301,7 +283,7 @@ public class ClassNode extends ClassVisitor {
     @Override
     public void visitAttribute(final Attribute attr) {
         if (attrs == null) {
-            attrs = new ArrayList<>(1);
+            attrs = new ArrayList<Attribute>(1);
         }
         attrs.add(attr);
     }
@@ -318,7 +300,7 @@ public class ClassNode extends ClassVisitor {
     public FieldVisitor visitField(final int access, final String name,
                                    final String desc, final String signature, final Object value) {
         FieldNode fn = new FieldNode(access, name, desc, signature, value);
-        fn.setParent(this);
+        fn.owner = this;
         fields.add(fn);
         return fn;
     }
@@ -328,7 +310,7 @@ public class ClassNode extends ClassVisitor {
                                      final String desc, final String signature, final String[] exceptions) {
         MethodNode mn = new MethodNode(access, name, desc, signature,
                 exceptions);
-        mn.setParent(this);
+        mn.owner = this;
         methods.add(mn);
         return mn;
     }
@@ -432,11 +414,147 @@ public class ClassNode extends ClassVisitor {
         cv.visitEnd();
     }
 
-    public boolean isDescendantOf(String className) {
-        if (superName.equals(className)) return true;
-        ClassNode superClass = getSuperClass();
-        if (superClass != null)
-            return superClass.isDescendantOf(className);
-        return false;
+    public List<String> constructors() {
+        List<String> constructors = new ArrayList<>();
+        for (MethodNode mn : methods) {
+            if (mn.name.equals("<init>")) {
+                constructors.add(mn.desc);
+            }
+        }
+        return constructors;
+    }
+
+    public MethodNode getMethodByName(String name) {
+        for (MethodNode mn : methods) {
+            if (mn.name.equals(name)) {
+                return mn;
+            }
+        }
+        return null;
+    }
+
+    public FieldNode getField(String field, String desc, boolean ignoreStatic) {
+        for (FieldNode fn : fields) {
+            if (ignoreStatic && (fn.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+                continue;
+            }
+            if ((field == null || fn.name.equals(field)) && (desc == null || desc.equals(fn.desc))) {
+                return fn;
+            }
+        }
+        return null;
+    }
+
+    public FieldNode getField(String field, String desc) {
+        return getField(field, desc, true);
+    }
+
+    public FieldNode getPublicField(String field, String desc, boolean ignoreStatic) {
+        for (FieldNode fn : fields) {
+            if ((fn.access & Opcodes.ACC_PUBLIC) != Opcodes.ACC_PUBLIC) {
+                continue;
+            }
+            if (ignoreStatic && (fn.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+                continue;
+            }
+            if ((field == null || fn.name.equals(field)) && (desc == null || desc.equals(fn.desc))) {
+                return fn;
+            }
+        }
+        return null;
+    }
+
+    public FieldNode getPublicField(String field, String desc) {
+        return getPublicField(field, desc, true);
+    }
+
+    public MethodNode getMethod(String method, String desc) {
+        for (MethodNode mn : methods) {
+            if (mn.name.equals(method) && (desc == null || desc.equals(mn.desc))) {
+                return mn;
+            }
+        }
+        return ownerless() ? null : Application.getClasses().get(superName).getMethod(method, desc);
+    }
+
+    public MethodNode getMethod(String desc) {
+        for (MethodNode mn : methods) {
+            if (desc.endsWith(mn.desc)) {
+                return mn;
+            }
+        }
+        return null;
+    }
+
+    public int methodCount(String desc, boolean ignoreStatic) {
+        int count = 0;
+        for (MethodNode mn : methods) {
+            if (ignoreStatic && (mn.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+                continue;
+            }
+            if (mn.desc.equals(desc)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int methodCount(String desc) {
+        return methodCount(desc, true);
+    }
+
+    public int fieldCount(String desc, boolean ignoreStatic) {
+        int count = 0;
+        for (FieldNode fn : fields) {
+            if (ignoreStatic && (fn.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+                continue;
+            }
+            if (fn.desc.equals(desc)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int fieldCount(String desc) {
+        return fieldCount(desc, true);
+    }
+
+    public int getAbnormalFieldCount(boolean ignoreStatic) {
+        int count = 0;
+        for (FieldNode fn : fields) {
+            if (ignoreStatic && (fn.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+                continue;
+            }
+            if (fn.desc.contains("L") && fn.desc.endsWith(";") && !fn.desc.contains("java")) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int getAbnormalFieldCount() {
+        return getAbnormalFieldCount(true);
+    }
+
+    public int getFieldTypeCount(boolean ignoreStatic) {
+        List<String> types = new ArrayList<>();
+        for (FieldNode fn : fields) {
+            if (ignoreStatic && (fn.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC) {
+                continue;
+            }
+            if (!types.contains(fn.desc)) {
+                types.add(fn.desc);
+            }
+        }
+        return types.size();
+    }
+
+    public int getFieldTypeCount() {
+        return getFieldTypeCount(true);
+    }
+
+    public boolean ownerless() {
+        return superName.startsWith("java/");
     }
 }

@@ -1170,7 +1170,14 @@ public class ClassReader {
                         if (labels[label] == null) {
                             readLabel(label, labels).status |= Label.DEBUG;
                         }
-                        labels[label].line = readUnsignedShort(v + 12);
+                        Label l = labels[label];
+                        while (l.line > 0) {
+                            if (l.next == null) {
+                                l.next = new Label();
+                            }
+                            l = l.next;
+                        }
+                        l.line = readUnsignedShort(v + 12);
                         v += 4;
                     }
                 }
@@ -1237,7 +1244,7 @@ public class ClassReader {
         u += 2;
 
         // generates the first (implicit) stack map frame
-        if (FRAMES && (stackMap != 0 || unzip)) {
+        if (FRAMES && stackMap != 0) {
             /*
              * for the first explicit frame the offset is not offset_delta + 1
              * but only offset_delta; setting the implicit frame offset to -1
@@ -1254,8 +1261,6 @@ public class ClassReader {
             if (unzip) {
                 getImplicitFrame(context);
             }
-        }
-        if (FRAMES && stackMap != 0) {
             /*
              * Finds labels for UNINITIALIZED frame types. Instead of decoding
              * each element of the stack map table, we look for 3 consecutive
@@ -1287,23 +1292,31 @@ public class ClassReader {
             // visits the label and line number for this offset, if any
             Label l = labels[offset];
             if (l != null) {
+                Label next = l.next;
+                l.next = null;
                 mv.visitLabel(l);
                 if ((context.flags & SKIP_DEBUG) == 0 && l.line > 0) {
                     mv.visitLineNumber(l.line, l);
+                    while (next != null) {
+                        mv.visitLineNumber(next.line, l);
+                        next = next.next;
+                    }
                 }
             }
 
-            // visits the frame(s) for this offset, if any
+            // visits the frame for this offset, if any
             while (FRAMES && frame != null
                     && (frame.offset == offset || frame.offset == -1)) {
                 // if there is a frame for this offset, makes the visitor visit
                 // it, and reads the next frame if there is one.
-                if (!zip || unzip) {
-                    mv.visitFrame(Opcodes.F_NEW, frame.localCount, frame.local,
-                            frame.stackCount, frame.stack);
-                } else if (frame.offset != -1) {
-                    mv.visitFrame(frame.mode, frame.localDiff, frame.local,
-                            frame.stackCount, frame.stack);
+                if (frame.offset != -1) {
+                    if (!zip || unzip) {
+                        mv.visitFrame(Opcodes.F_NEW, frame.localCount,
+                                frame.local, frame.stackCount, frame.stack);
+                    } else {
+                        mv.visitFrame(frame.mode, frame.localDiff, frame.local,
+                                frame.stackCount, frame.stack);
+                    }
                 }
                 if (frameCount > 0) {
                     stackMap = readFrame(stackMap, zip, unzip, frame);
@@ -1405,6 +1418,7 @@ public class ClassReader {
             case ClassWriter.FIELDORMETH_INSN:
             case ClassWriter.ITFMETH_INSN: {
                 int cpIndex = items[readUnsignedShort(u + 1)];
+                boolean itf = b[cpIndex - 1] == ClassWriter.IMETH;
                 String iowner = readClass(cpIndex, c);
                 cpIndex = items[readUnsignedShort(cpIndex + 2)];
                 String iname = readUTF8(cpIndex, c);
@@ -1412,7 +1426,7 @@ public class ClassReader {
                 if (opcode < Opcodes.INVOKEVIRTUAL) {
                     mv.visitFieldInsn(opcode, iowner, iname, idesc);
                 } else {
-                    mv.visitMethodInsn(opcode, iowner, iname, idesc);
+                    mv.visitMethodInsn(opcode, iowner, iname, idesc, itf);
                 }
                 if (opcode == Opcodes.INVOKEINTERFACE) {
                     u += 5;
@@ -1517,9 +1531,9 @@ public class ClassReader {
 
         // visits the local variables type annotations
         if (tanns != null) {
-            for (int tann1 : tanns) {
-                if ((readByte(tann1) >> 1) == (0x40 >> 1)) {
-                    int v = readAnnotationTarget(context, tann1);
+            for (int i = 0; i < tanns.length; ++i) {
+                if ((readByte(tanns[i]) >> 1) == (0x40 >> 1)) {
+                    int v = readAnnotationTarget(context, tanns[i]);
                     v = readAnnotationValues(v + 2, c, true,
                             mv.visitLocalVariableAnnotation(context.typeRef,
                                     context.typePath, context.start,
@@ -1529,9 +1543,9 @@ public class ClassReader {
             }
         }
         if (itanns != null) {
-            for (int itann1 : itanns) {
-                if ((readByte(itann1) >> 1) == (0x40 >> 1)) {
-                    int v = readAnnotationTarget(context, itann1);
+            for (int i = 0; i < itanns.length; ++i) {
+                if ((readByte(itanns[i]) >> 1) == (0x40 >> 1)) {
+                    int v = readAnnotationTarget(context, itanns[i]);
                     v = readAnnotationValues(v + 2, c, true,
                             mv.visitLocalVariableAnnotation(context.typeRef,
                                     context.typePath, context.start,
@@ -1613,8 +1627,8 @@ public class ClassReader {
             // case 0x42: // EXCEPTION_PARAMETER
             // case 0x43: // INSTANCEOF
             // case 0x44: // NEW
-            // case 0x45: // CONSTRUCTOR_REFERENCE_RECEIVER
-            // case 0x46: // METHOD_REFERENCE_RECEIVER
+            // case 0x45: // CONSTRUCTOR_REFERENCE
+            // case 0x46: // METHOD_REFERENCE
             default:
                 u += 3;
                 break;
@@ -1695,8 +1709,8 @@ public class ClassReader {
         // case 0x42: // EXCEPTION_PARAMETER
         // case 0x43: // INSTANCEOF
         // case 0x44: // NEW
-        // case 0x45: // CONSTRUCTOR_REFERENCE_RECEIVER
-        // case 0x46: // METHOD_REFERENCE_RECEIVER
+        // case 0x45: // CONSTRUCTOR_REFERENCE
+        // case 0x46: // METHOD_REFERENCE
         default:
             target &= (target >>> 24) < 0x43 ? 0xFFFFFF00 : 0xFF000000;
             u += 3;
@@ -1827,8 +1841,7 @@ public class ClassReader {
             v += 2;
             break;
         case 'B': // pointer to CONSTANT_Byte
-            av.visit(name,
-                    new Byte((byte) readInt(items[readUnsignedShort(v)])));
+            av.visit(name, (byte) readInt(items[readUnsignedShort(v)]));
             v += 2;
             break;
         case 'Z': // pointer to CONSTANT_Boolean
@@ -1838,13 +1851,11 @@ public class ClassReader {
             v += 2;
             break;
         case 'S': // pointer to CONSTANT_Short
-            av.visit(name, new Short(
-                    (short) readInt(items[readUnsignedShort(v)])));
+            av.visit(name, (short) readInt(items[readUnsignedShort(v)]));
             v += 2;
             break;
         case 'C': // pointer to CONSTANT_Char
-            av.visit(name, new Character(
-                    (char) readInt(items[readUnsignedShort(v)])));
+            av.visit(name, (char) readInt(items[readUnsignedShort(v)]));
             v += 2;
             break;
         case 's': // pointer to CONSTANT_Utf8
@@ -2238,9 +2249,9 @@ public class ClassReader {
     private Attribute readAttribute(final Attribute[] attrs, final String type,
             final int off, final int len, final char[] buf, final int codeOff,
             final Label[] labels) {
-        for (Attribute attr : attrs) {
-            if (attr.type.equals(type)) {
-                return attr.read(this, off, len, buf, codeOff, labels);
+        for (int i = 0; i < attrs.length; ++i) {
+            if (attrs[i].type.equals(type)) {
+                return attrs[i].read(this, off, len, buf, codeOff, labels);
             }
         }
         return new Attribute(type).read(this, off, len, null, -1, null);
@@ -2468,13 +2479,13 @@ public class ClassReader {
         int index = items[item];
         switch (b[index - 1]) {
         case ClassWriter.INT:
-            return new Integer(readInt(index));
+            return readInt(index);
         case ClassWriter.FLOAT:
-            return new Float(Float.intBitsToFloat(readInt(index)));
+            return Float.intBitsToFloat(readInt(index));
         case ClassWriter.LONG:
-            return new Long(readLong(index));
+            return readLong(index);
         case ClassWriter.DOUBLE:
-            return new Double(Double.longBitsToDouble(readLong(index)));
+            return Double.longBitsToDouble(readLong(index));
         case ClassWriter.CLASS:
             return Type.getObjectType(readUTF8(index, buf));
         case ClassWriter.STR:
@@ -2485,11 +2496,12 @@ public class ClassReader {
             int tag = readByte(index);
             int[] items = this.items;
             int cpIndex = items[readUnsignedShort(index + 1)];
+            boolean itf = b[cpIndex - 1] == ClassWriter.IMETH;
             String owner = readClass(cpIndex, buf);
             cpIndex = items[readUnsignedShort(cpIndex + 2)];
             String name = readUTF8(cpIndex, buf);
             String desc = readUTF8(cpIndex + 2, buf);
-            return new Handle(tag, owner, name, desc);
+            return new Handle(tag, owner, name, desc, itf);
         }
     }
 }

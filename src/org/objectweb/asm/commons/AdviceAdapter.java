@@ -105,8 +105,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
     public void visitCode() {
         mv.visitCode();
         if (constructor) {
-            stackFrame = new ArrayList<>();
-            branches = new HashMap<>();
+            stackFrame = new ArrayList<Object>();
+            branches = new HashMap<Label, List<Object>>();
         } else {
             superInitialized = true;
             onMethodEnter();
@@ -360,8 +360,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
                 break;
             case PUTFIELD:
                 popValue();
+                popValue();
                 if (longOrDouble) {
-                    popValue();
                     popValue();
                 }
                 break;
@@ -413,15 +413,36 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
         }
     }
 
+    @Deprecated
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
             final String name, final String desc) {
-        mv.visitMethodInsn(opcode, owner, name, desc);
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc,
+                opcode == Opcodes.INVOKEINTERFACE);
+    }
+
+    @Override
+    public void visitMethodInsn(final int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc, itf);
+    }
+
+    private void doVisitMethodInsn(int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        mv.visitMethodInsn(opcode, owner, name, desc, itf);
         if (constructor) {
             Type[] types = Type.getArgumentTypes(desc);
-            for (Type type1 : types) {
+            for (int i = 0; i < types.length; i++) {
                 popValue();
-                if (type1.getSize() == 2) {
+                if (types[i].getSize() == 2) {
                     popValue();
                 }
             }
@@ -460,9 +481,9 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
         mv.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
         if (constructor) {
             Type[] types = Type.getArgumentTypes(desc);
-            for (Type type : types) {
+            for (int i = 0; i < types.length; i++) {
                 popValue();
-                if (type.getSize() == 2) {
+                if (types[i].getSize() == 2) {
                     popValue();
                 }
             }
@@ -536,7 +557,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
             String type) {
         super.visitTryCatchBlock(start, end, handler, type);
         if (constructor && !branches.containsKey(handler)) {
-            List<Object> stackFrame = new ArrayList<>();
+            List<Object> stackFrame = new ArrayList<Object>();
             stackFrame.add(OTHER);
             branches.put(handler, stackFrame);
         }
@@ -544,8 +565,8 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
 
     private void addBranches(final Label dflt, final Label[] labels) {
         addBranch(dflt);
-        for (Label label : labels) {
-            addBranch(label);
+        for (int i = 0; i < labels.length; i++) {
+            addBranch(labels[i]);
         }
     }
 
@@ -553,7 +574,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
         if (branches.containsKey(label)) {
             return;
         }
-        branches.put(label, new ArrayList<>(stackFrame));
+        branches.put(label, new ArrayList<Object>(stackFrame));
     }
 
     private Object popValue() {
@@ -569,7 +590,7 @@ public abstract class AdviceAdapter extends GeneratorAdapter implements Opcodes 
     }
 
     /**
-     * Called at the beginning of the method or after super class class call in
+     * Called at the beginning of the method or after super class call in
      * the constructor. <br>
      * <br>
      * 

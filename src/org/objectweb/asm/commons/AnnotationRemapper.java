@@ -27,63 +27,53 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.objectweb.asm.optimizer;
+
+package org.objectweb.asm.commons;
 
 import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.TypePath;
 
 /**
- * A {@link FieldVisitor} that collects the {@link Constant}s of the fields it
- * visits.
+ * An {@link AnnotationVisitor} adapter for type remapping.
  * 
- * @author Eric Bruneton
+ * @author Eugene Kuleshov
  */
-public class FieldConstantsCollector extends FieldVisitor {
+public class AnnotationRemapper extends AnnotationVisitor {
 
-    private final ConstantPool cp;
+    protected final Remapper remapper;
 
-    public FieldConstantsCollector(final FieldVisitor fv, final ConstantPool cp) {
-        super(Opcodes.ASM5, fv);
-        this.cp = cp;
+    public AnnotationRemapper(final AnnotationVisitor av,
+            final Remapper remapper) {
+        this(Opcodes.ASM5, av, remapper);
+    }
+
+    protected AnnotationRemapper(final int api, final AnnotationVisitor av,
+            final Remapper remapper) {
+        super(api, av);
+        this.remapper = remapper;
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
-        cp.newUTF8(desc);
-        if (visible) {
-            cp.newUTF8("RuntimeVisibleAnnotations");
-        } else {
-            cp.newUTF8("RuntimeInvisibleAnnotations");
-        }
-        return new AnnotationConstantsCollector(fv.visitAnnotation(desc,
-                visible), cp);
+    public void visit(String name, Object value) {
+        av.visit(name, remapper.mapValue(value));
     }
 
     @Override
-    public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
-        cp.newUTF8(desc);
-        if (visible) {
-            cp.newUTF8("RuntimeVisibleTypeAnnotations");
-        } else {
-            cp.newUTF8("RuntimeInvisibleTypeAnnotations");
-        }
-        return new AnnotationConstantsCollector(fv.visitAnnotation(desc,
-                visible), cp);
+    public void visitEnum(String name, String desc, String value) {
+        av.visitEnum(name, remapper.mapDesc(desc), value);
     }
 
     @Override
-    public void visitAttribute(final Attribute attr) {
-        // can do nothing
-        fv.visitAttribute(attr);
+    public AnnotationVisitor visitAnnotation(String name, String desc) {
+        AnnotationVisitor v = av.visitAnnotation(name, remapper.mapDesc(desc));
+        return v == null ? null : (v == av ? this : new AnnotationRemapper(v,
+                remapper));
     }
 
     @Override
-    public void visitEnd() {
-        fv.visitEnd();
+    public AnnotationVisitor visitArray(String name) {
+        AnnotationVisitor v = av.visitArray(name);
+        return v == null ? null : (v == av ? this : new AnnotationRemapper(v,
+                remapper));
     }
 }

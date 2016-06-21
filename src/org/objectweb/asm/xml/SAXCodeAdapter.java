@@ -58,6 +58,8 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     SAXAdapter sa;
 
+    int access;
+
     private final Map<Label, String> labelNames;
 
     /**
@@ -69,11 +71,8 @@ public final class SAXCodeAdapter extends MethodVisitor {
     public SAXCodeAdapter(final SAXAdapter sa, final int access) {
         super(Opcodes.ASM5);
         this.sa = sa;
-        this.labelNames = new HashMap<>();
-
-        if ((access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_INTERFACE | Opcodes.ACC_NATIVE)) == 0) {
-            sa.addStart("code", new AttributesImpl());
-        }
+        this.access = access;
+        this.labelNames = new HashMap<Label, String>();
     }
 
     @Override
@@ -82,7 +81,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
         if (name != null) {
             attrs.addAttribute("", "name", "name", "", name);
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         SAXClassAdapter.appendAccess(access, sb);
         attrs.addAttribute("", "access", "access", "", sb.toString());
         sa.addElement("parameter", attrs);
@@ -90,6 +89,9 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitCode() {
+        if ((access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_INTERFACE | Opcodes.ACC_NATIVE)) == 0) {
+            sa.addStart("code", new AttributesImpl());
+        }
     }
 
     @Override
@@ -189,11 +191,12 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+            final String name, final String desc, final boolean itf) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "owner", "owner", "", owner);
         attrs.addAttribute("", "name", "name", "", name);
         attrs.addAttribute("", "desc", "desc", "", desc);
+        attrs.addAttribute("", "itf", "itf", "", itf ? "true" : "false");
         sa.addElement(Printer.OPCODES[opcode], attrs);
     }
 
@@ -206,8 +209,8 @@ public final class SAXCodeAdapter extends MethodVisitor {
         attrs.addAttribute("", "bsm", "bsm", "",
                 SAXClassAdapter.encode(bsm.toString()));
         sa.addStart("INVOKEDYNAMIC", attrs);
-        for (Object bsmArg : bsmArgs) {
-            sa.addElement("bsmArg", getConstantAttribute(bsmArg));
+        for (int i = 0; i < bsmArgs.length; i++) {
+            sa.addElement("bsmArg", getConstantAttribute(bsmArgs[i]));
         }
         sa.addEnd("INVOKEDYNAMIC");
     }
@@ -257,9 +260,9 @@ public final class SAXCodeAdapter extends MethodVisitor {
         attrs.addAttribute("", "dflt", "dflt", "", getLabel(dflt));
         String o = Printer.OPCODES[Opcodes.TABLESWITCH];
         sa.addStart(o, attrs);
-        for (Label label : labels) {
+        for (int i = 0; i < labels.length; i++) {
             AttributesImpl att2 = new AttributesImpl();
-            att2.addAttribute("", "name", "name", "", getLabel(label));
+            att2.addAttribute("", "name", "name", "", getLabel(labels[i]));
             sa.addElement("label", att2);
         }
         sa.addEnd(o);

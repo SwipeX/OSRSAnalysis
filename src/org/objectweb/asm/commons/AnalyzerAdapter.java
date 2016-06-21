@@ -136,10 +136,15 @@ public class AnalyzerAdapter extends MethodVisitor {
      * @param mv
      *            the method visitor to which this adapter delegates calls. May
      *            be <tt>null</tt>.
+     * @throws IllegalStateException
+     *             If a subclass calls this constructor.
      */
     public AnalyzerAdapter(final String owner, final int access,
             final String name, final String desc, final MethodVisitor mv) {
         this(Opcodes.ASM5, owner, access, name, desc, mv);
+        if (getClass() != AnalyzerAdapter.class) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -165,9 +170,9 @@ public class AnalyzerAdapter extends MethodVisitor {
             final MethodVisitor mv) {
         super(api, mv);
         this.owner = owner;
-        locals = new ArrayList<>();
-        stack = new ArrayList<>();
-        uninitializedTypes = new HashMap<>();
+        locals = new ArrayList<Object>();
+        stack = new ArrayList<Object>();
+        uninitializedTypes = new HashMap<Object, Object>();
 
         if ((access & Opcodes.ACC_STATIC) == 0) {
             if ("<init>".equals(name)) {
@@ -177,34 +182,36 @@ public class AnalyzerAdapter extends MethodVisitor {
             }
         }
         Type[] types = Type.getArgumentTypes(desc);
-        for (Type type : types) {
+        for (int i = 0; i < types.length; ++i) {
+            Type type = types[i];
             switch (type.getSort()) {
-                case Type.BOOLEAN:
-                case Type.CHAR:
-                case Type.BYTE:
-                case Type.SHORT:
-                case Type.INT:
-                    locals.add(Opcodes.INTEGER);
-                    break;
-                case Type.FLOAT:
-                    locals.add(Opcodes.FLOAT);
-                    break;
-                case Type.LONG:
-                    locals.add(Opcodes.LONG);
-                    locals.add(Opcodes.TOP);
-                    break;
-                case Type.DOUBLE:
-                    locals.add(Opcodes.DOUBLE);
-                    locals.add(Opcodes.TOP);
-                    break;
-                case Type.ARRAY:
-                    locals.add(type.getDescriptor());
-                    break;
-                // case Type.OBJECT:
-                default:
-                    locals.add(type.getInternalName());
+            case Type.BOOLEAN:
+            case Type.CHAR:
+            case Type.BYTE:
+            case Type.SHORT:
+            case Type.INT:
+                locals.add(Opcodes.INTEGER);
+                break;
+            case Type.FLOAT:
+                locals.add(Opcodes.FLOAT);
+                break;
+            case Type.LONG:
+                locals.add(Opcodes.LONG);
+                locals.add(Opcodes.TOP);
+                break;
+            case Type.DOUBLE:
+                locals.add(Opcodes.DOUBLE);
+                locals.add(Opcodes.TOP);
+                break;
+            case Type.ARRAY:
+                locals.add(types[i].getDescriptor());
+                break;
+            // case Type.OBJECT:
+            default:
+                locals.add(types[i].getInternalName());
             }
         }
+        maxLocals = locals.size();
     }
 
     @Override
@@ -223,8 +230,8 @@ public class AnalyzerAdapter extends MethodVisitor {
             this.locals.clear();
             this.stack.clear();
         } else {
-            this.locals = new ArrayList<>();
-            this.stack = new ArrayList<>();
+            this.locals = new ArrayList<Object>();
+            this.stack = new ArrayList<Object>();
         }
         visitFrameTypes(nLocal, local, this.locals);
         visitFrameTypes(nStack, stack, this.stack);
@@ -276,14 +283,14 @@ public class AnalyzerAdapter extends MethodVisitor {
         if (opcode == Opcodes.NEW) {
             if (labels == null) {
                 Label l = new Label();
-                labels = new ArrayList<>(3);
+                labels = new ArrayList<Label>(3);
                 labels.add(l);
                 if (mv != null) {
                     mv.visitLabel(l);
                 }
             }
-            for (Label label : labels) {
-                uninitializedTypes.put(label, type);
+            for (int i = 0; i < labels.size(); ++i) {
+                uninitializedTypes.put(labels.get(i), type);
             }
         }
         if (mv != null) {
@@ -301,11 +308,32 @@ public class AnalyzerAdapter extends MethodVisitor {
         execute(opcode, 0, desc);
     }
 
+    @Deprecated
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
             final String name, final String desc) {
+        if (api >= Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc,
+                opcode == Opcodes.INVOKEINTERFACE);
+    }
+
+    @Override
+    public void visitMethodInsn(final int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
+        if (api < Opcodes.ASM5) {
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            return;
+        }
+        doVisitMethodInsn(opcode, owner, name, desc, itf);
+    }
+
+    private void doVisitMethodInsn(int opcode, final String owner,
+            final String name, final String desc, final boolean itf) {
         if (mv != null) {
-            mv.visitMethodInsn(opcode, owner, name, desc);
+            mv.visitMethodInsn(opcode, owner, name, desc, itf);
         }
         if (this.locals == null) {
             labels = null;
@@ -370,7 +398,7 @@ public class AnalyzerAdapter extends MethodVisitor {
             mv.visitLabel(label);
         }
         if (labels == null) {
-            labels = new ArrayList<>(3);
+            labels = new ArrayList<Label>(3);
         }
         labels.add(label);
     }
@@ -463,12 +491,12 @@ public class AnalyzerAdapter extends MethodVisitor {
     // ------------------------------------------------------------------------
 
     private Object get(final int local) {
-        maxLocals = Math.max(maxLocals, local);
+        maxLocals = Math.max(maxLocals, local + 1);
         return local < locals.size() ? locals.get(local) : Opcodes.TOP;
     }
 
     private void set(final int local, final Object type) {
-        maxLocals = Math.max(maxLocals, local);
+        maxLocals = Math.max(maxLocals, local + 1);
         while (local >= locals.size()) {
             locals.add(Opcodes.TOP);
         }
@@ -537,8 +565,8 @@ public class AnalyzerAdapter extends MethodVisitor {
         if (c == '(') {
             int n = 0;
             Type[] types = Type.getArgumentTypes(desc);
-            for (Type type : types) {
-                n += type.getSize();
+            for (int i = 0; i < types.length; ++i) {
+                n += types[i].getSize();
             }
             pop(n);
         } else if (c == 'J' || c == 'D') {

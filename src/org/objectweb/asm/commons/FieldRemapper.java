@@ -1,5 +1,4 @@
-<html>
-<!--
+/***
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
@@ -27,22 +26,46 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
--->
-<body>
-Provides an implementation for optional class, field and method attributes.
+ */
 
-<p>
+package org.objectweb.asm.commons;
 
-By default ASM strips optional attributes, in order to keep them in
-the bytecode that is being readed you should pass an array of required attribute
-instances to {@link org.objectweb.asm.ClassReader#accept(org.objectweb.asm.ClassVisitor, org.objectweb.asm.Attribute[], boolean) ClassReader.accept()} method.
-In order to add custom attributes to the manually constructed bytecode concrete
-subclasses of the {@link org.objectweb.asm.Attribute Attribute} can be passed to
-the visitAttribute methods of the
-{@link org.objectweb.asm.ClassVisitor ClassVisitor},
-{@link org.objectweb.asm.FieldVisitor FieldVisitor} and
-{@link org.objectweb.asm.MethodVisitor MethodVisitor} interfaces.
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.TypePath;
 
-@since ASM 1.4.1
-</body>
-</html>
+/**
+ * A {@link FieldVisitor} adapter for type remapping.
+ * 
+ * @author Eugene Kuleshov
+ */
+public class FieldRemapper extends FieldVisitor {
+
+    private final Remapper remapper;
+
+    public FieldRemapper(final FieldVisitor fv, final Remapper remapper) {
+        this(Opcodes.ASM5, fv, remapper);
+    }
+
+    protected FieldRemapper(final int api, final FieldVisitor fv,
+            final Remapper remapper) {
+        super(api, fv);
+        this.remapper = remapper;
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        AnnotationVisitor av = fv.visitAnnotation(remapper.mapDesc(desc),
+                visible);
+        return av == null ? null : new AnnotationRemapper(av, remapper);
+    }
+
+    @Override
+    public AnnotationVisitor visitTypeAnnotation(int typeRef,
+            TypePath typePath, String desc, boolean visible) {
+        AnnotationVisitor av = super.visitTypeAnnotation(typeRef, typePath,
+                remapper.mapDesc(desc), visible);
+        return av == null ? null : new AnnotationRemapper(av, remapper);
+    }
+}

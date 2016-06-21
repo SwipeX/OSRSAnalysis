@@ -376,10 +376,10 @@ public class BasicVerifier extends BasicInterpreter {
             final List<? extends BasicValue> values) throws AnalyzerException {
         int opcode = insn.getOpcode();
         if (opcode == MULTIANEWARRAY) {
-            for (BasicValue value : values) {
-                if (!BasicValue.INT_VALUE.equals(value)) {
+            for (int i = 0; i < values.size(); ++i) {
+                if (!BasicValue.INT_VALUE.equals(values.get(i))) {
                     throw new AnalyzerException(insn, null,
-                            BasicValue.INT_VALUE, value);
+                            BasicValue.INT_VALUE, values.get(i));
                 }
             }
         } else {
