@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,27 +29,29 @@
  */
 package org.objectweb.asm.tree;
 
+import org.objectweb.asm.MethodVisitor;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.objectweb.asm.MethodVisitor;
-
 /**
  * A node that represents a bytecode instruction. <i>An instruction can appear
- * at most once in at most one {@link InsnList} at a time</i>.
- * 
+ * at most once in at most one {@link org.objectweb.asm.tree.InsnList} at a time</i>.
+ *
  * @author Eric Bruneton
  */
-public abstract class AbstractInsnNode {
+public abstract class AbstractInsnNode implements Serializable {
 
+    private static final long serialVersionUID = 1338L;
     /**
-     * The type of {@link InsnNode} instructions.
+     * The type of {@link org.objectweb.asm.tree.InsnNode} instructions.
      */
     public static final int INSN = 0;
 
     /**
-     * The type of {@link IntInsnNode} instructions.
+     * The type of {@link org.objectweb.asm.tree.IntInsnNode} instructions.
      */
     public static final int INT_INSN = 1;
 
@@ -59,7 +61,7 @@ public abstract class AbstractInsnNode {
     public static final int VAR_INSN = 2;
 
     /**
-     * The type of {@link TypeInsnNode} instructions.
+     * The type of {@link org.objectweb.asm.tree.TypeInsnNode} instructions.
      */
     public static final int TYPE_INSN = 3;
 
@@ -84,7 +86,7 @@ public abstract class AbstractInsnNode {
     public static final int JUMP_INSN = 7;
 
     /**
-     * The type of {@link LabelNode} "instructions".
+     * The type of {@link org.objectweb.asm.tree.LabelNode} "instructions".
      */
     public static final int LABEL = 8;
 
@@ -94,7 +96,7 @@ public abstract class AbstractInsnNode {
     public static final int LDC_INSN = 9;
 
     /**
-     * The type of {@link IincInsnNode} instructions.
+     * The type of {@link org.objectweb.asm.tree.IincInsnNode} instructions.
      */
     public static final int IINC_INSN = 10;
 
@@ -123,6 +125,8 @@ public abstract class AbstractInsnNode {
      */
     public static final int LINE = 15;
 
+    protected org.objectweb.asm.tree.MethodNode method;
+
     /**
      * The opcode of this instruction.
      */
@@ -133,8 +137,8 @@ public abstract class AbstractInsnNode {
      * only used for real instructions (i.e. not for labels, frames, or line
      * number nodes). This list is a list of {@link TypeAnnotationNode} objects.
      * May be <tt>null</tt>.
-     * 
-     * @associates org.objectweb.asm.tree.TypeAnnotationNode
+     *
+     * @associates objectweb.org.objectweb.org.objectweb.TypeAnnotationNode
      * @label visible
      */
     public List<TypeAnnotationNode> visibleTypeAnnotations;
@@ -144,8 +148,8 @@ public abstract class AbstractInsnNode {
      * only used for real instructions (i.e. not for labels, frames, or line
      * number nodes). This list is a list of {@link TypeAnnotationNode} objects.
      * May be <tt>null</tt>.
-     * 
-     * @associates org.objectweb.asm.tree.TypeAnnotationNode
+     *
+     * @associates objectweb.org.objectweb.org.objectweb.TypeAnnotationNode
      * @label invisible
      */
     public List<TypeAnnotationNode> invisibleTypeAnnotations;
@@ -162,15 +166,15 @@ public abstract class AbstractInsnNode {
 
     /**
      * Index of this instruction in the list to which it belongs. The value of
-     * this field is correct only when {@link InsnList#cache} is not null. A
+     * this field is correct only when {@link org.objectweb.asm.tree.InsnList#cache} is not null. A
      * value of -1 indicates that this instruction does not belong to any
-     * {@link InsnList}.
+     * {@link org.objectweb.asm.tree.InsnList}.
      */
     int index;
 
     /**
      * Constructs a new {@link AbstractInsnNode}.
-     * 
+     *
      * @param opcode
      *            the opcode of the instruction to be constructed.
      */
@@ -180,47 +184,65 @@ public abstract class AbstractInsnNode {
     }
 
     /**
+     * Gets the method this instruction is inside of.
+     *
+     * @return The method this instruction is inside of.
+     */
+    public MethodNode method() {
+        return method;
+    }
+
+    /**
      * Returns the opcode of this instruction.
-     * 
+     *
      * @return the opcode of this instruction.
      */
-    public int getOpcode() {
+    public int opcode() {
         return opcode;
     }
 
     /**
      * Returns the type of this instruction.
-     * 
+     *
      * @return the type of this instruction, i.e. one the constants defined in
      *         this class.
      */
-    public abstract int getType();
+    public abstract int type();
 
     /**
      * Returns the previous instruction in the list to which this instruction
      * belongs, if any.
-     * 
+     *
      * @return the previous instruction in the list to which this instruction
      *         belongs, if any. May be <tt>null</tt>.
      */
-    public AbstractInsnNode getPrevious() {
+    public AbstractInsnNode previous() {
         return prev;
     }
 
     /**
      * Returns the next instruction in the list to which this instruction
      * belongs, if any.
-     * 
+     *
      * @return the next instruction in the list to which this instruction
      *         belongs, if any. May be <tt>null</tt>.
      */
-    public AbstractInsnNode getNext() {
+    public AbstractInsnNode next() {
         return next;
     }
 
     /**
+     * Gets the index of this instruction.
+     *
+     * @return The index of this instruction.
+     */
+    public int index() {
+        return method != null ? method.instructions.indexOf(this) : -1;
+    }
+
+    /**
      * Makes the given code visitor visit this instruction.
-     * 
+     *
      * @param cv
      *            a code visitor.
      */
@@ -228,64 +250,59 @@ public abstract class AbstractInsnNode {
 
     /**
      * Makes the given visitor visit the annotations of this instruction.
-     * 
+     *
      * @param mv
      *            a method visitor.
      */
     protected final void acceptAnnotations(final MethodVisitor mv) {
-        int n = visibleTypeAnnotations == null ? 0 : visibleTypeAnnotations
-                .size();
+        int n = visibleTypeAnnotations == null ? 0 : visibleTypeAnnotations.size();
         for (int i = 0; i < n; ++i) {
             TypeAnnotationNode an = visibleTypeAnnotations.get(i);
-            an.accept(mv.visitInsnAnnotation(an.typeRef, an.typePath, an.desc,
-                    true));
+            an.accept(mv.visitInsnAnnotation(an, true));
         }
-        n = invisibleTypeAnnotations == null ? 0 : invisibleTypeAnnotations
-                .size();
+        n = invisibleTypeAnnotations == null ? 0 : invisibleTypeAnnotations.size();
         for (int i = 0; i < n; ++i) {
             TypeAnnotationNode an = invisibleTypeAnnotations.get(i);
-            an.accept(mv.visitInsnAnnotation(an.typeRef, an.typePath, an.desc,
-                    false));
+            an.accept(mv.visitInsnAnnotation(an, false));
         }
     }
 
     /**
      * Returns a copy of this instruction.
-     * 
+     *
      * @param labels
      *            a map from LabelNodes to cloned LabelNodes.
      * @return a copy of this instruction. The returned instruction does not
      *         belong to any {@link InsnList}.
      */
-    public abstract AbstractInsnNode clone(
-            final Map<LabelNode, LabelNode> labels);
+    public abstract AbstractInsnNode clone(final Map<org.objectweb.asm.tree.LabelNode, org.objectweb.asm.tree.LabelNode> labels);
 
     /**
      * Returns the clone of the given label.
-     * 
+     *
      * @param label
      *            a label.
      * @param map
      *            a map from LabelNodes to cloned LabelNodes.
      * @return the clone of the given label.
      */
-    static LabelNode clone(final LabelNode label,
-            final Map<LabelNode, LabelNode> map) {
+    static org.objectweb.asm.tree.LabelNode clone(final org.objectweb.asm.tree.LabelNode label,
+                                                  final Map<org.objectweb.asm.tree.LabelNode, org.objectweb.asm.tree.LabelNode> map) {
         return map.get(label);
     }
 
     /**
      * Returns the clones of the given labels.
-     * 
+     *
      * @param labels
      *            a list of labels.
      * @param map
      *            a map from LabelNodes to cloned LabelNodes.
      * @return the clones of the given labels.
      */
-    static LabelNode[] clone(final List<LabelNode> labels,
-            final Map<LabelNode, LabelNode> map) {
-        LabelNode[] clones = new LabelNode[labels.size()];
+    static org.objectweb.asm.tree.LabelNode[] clone(final List<org.objectweb.asm.tree.LabelNode> labels,
+                                                    final Map<org.objectweb.asm.tree.LabelNode, org.objectweb.asm.tree.LabelNode> map) {
+        org.objectweb.asm.tree.LabelNode[] clones = new LabelNode[labels.size()];
         for (int i = 0; i < clones.length; ++i) {
             clones[i] = map.get(labels.get(i));
         }
@@ -294,13 +311,12 @@ public abstract class AbstractInsnNode {
 
     /**
      * Clones the annotations of the given instruction into this instruction.
-     * 
+     *
      * @param insn
      *            the source instruction.
      * @return this instruction.
      */
-    protected final AbstractInsnNode cloneAnnotations(
-            final AbstractInsnNode insn) {
+    protected final AbstractInsnNode cloneAnnotations(final AbstractInsnNode insn) {
         if (insn.visibleTypeAnnotations != null) {
             this.visibleTypeAnnotations = new ArrayList<TypeAnnotationNode>();
             for (int i = 0; i < insn.visibleTypeAnnotations.size(); ++i) {
@@ -315,12 +331,15 @@ public abstract class AbstractInsnNode {
             this.invisibleTypeAnnotations = new ArrayList<TypeAnnotationNode>();
             for (int i = 0; i < insn.invisibleTypeAnnotations.size(); ++i) {
                 TypeAnnotationNode src = insn.invisibleTypeAnnotations.get(i);
-                TypeAnnotationNode ann = new TypeAnnotationNode(src.typeRef,
-                        src.typePath, src.desc);
+                TypeAnnotationNode ann = new TypeAnnotationNode(src.typeRef, src.typePath, src.desc);
                 src.accept(ann);
                 this.invisibleTypeAnnotations.add(ann);
             }
         }
         return this;
+    }
+
+    public void setOpcode(int opcode) {
+        this.opcode = opcode;
     }
 }

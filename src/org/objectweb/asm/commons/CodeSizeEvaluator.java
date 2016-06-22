@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,14 +29,13 @@
  */
 package org.objectweb.asm.commons;
 
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.*;
 
 /**
  * A {@link MethodVisitor} that can be used to approximate method size.
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
@@ -45,34 +44,34 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
 
     private int maxSize;
 
-    public CodeSizeEvaluator(final MethodVisitor mv) {
-        this(Opcodes.ASM5, mv);
+    public CodeSizeEvaluator() {
+        this(null);
     }
 
-    protected CodeSizeEvaluator(final int api, final MethodVisitor mv) {
-        super(api, mv);
+    public CodeSizeEvaluator(MethodVisitor mv) {
+        super(mv);
     }
 
     public int getMinSize() {
-        return this.minSize;
+        return minSize;
     }
 
     public int getMaxSize() {
-        return this.maxSize;
+        return maxSize;
     }
 
     @Override
-    public void visitInsn(final int opcode) {
+    public void visitInsn(InsnNode in) {
         minSize += 1;
         maxSize += 1;
         if (mv != null) {
-            mv.visitInsn(opcode);
+            mv.visitInsn(in);
         }
     }
 
     @Override
-    public void visitIntInsn(final int opcode, final int operand) {
-        if (opcode == SIPUSH) {
+    public void visitIntInsn(IntInsnNode iin) {
+        if (iin.opcode() == SIPUSH) {
             minSize += 3;
             maxSize += 3;
         } else {
@@ -80,16 +79,16 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
             maxSize += 2;
         }
         if (mv != null) {
-            mv.visitIntInsn(opcode, operand);
+            mv.visitIntInsn(iin);
         }
     }
 
     @Override
-    public void visitVarInsn(final int opcode, final int var) {
-        if (var < 4 && opcode != RET) {
+    public void visitVarInsn(VarInsnNode vin) {
+        if (vin.var < 4 && vin.opcode() != RET) {
             minSize += 1;
             maxSize += 1;
-        } else if (var >= 256) {
+        } else if (vin.var >= 256) {
             minSize += 4;
             maxSize += 4;
         } else {
@@ -97,54 +96,31 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
             maxSize += 2;
         }
         if (mv != null) {
-            mv.visitVarInsn(opcode, var);
+            mv.visitVarInsn(vin);
         }
     }
 
     @Override
-    public void visitTypeInsn(final int opcode, final String type) {
+    public void visitTypeInsn(TypeInsnNode tin) {
         minSize += 3;
         maxSize += 3;
         if (mv != null) {
-            mv.visitTypeInsn(opcode, type);
+            mv.visitTypeInsn(tin);
         }
     }
 
     @Override
-    public void visitFieldInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+    public void visitFieldInsn(FieldInsnNode fin) {
         minSize += 3;
         maxSize += 3;
         if (mv != null) {
-            mv.visitFieldInsn(opcode, owner, name, desc);
+            mv.visitFieldInsn(fin);
         }
-    }
-
-    @Deprecated
-    @Override
-    public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc) {
-        if (api >= Opcodes.ASM5) {
-            super.visitMethodInsn(opcode, owner, name, desc);
-            return;
-        }
-        doVisitMethodInsn(opcode, owner, name, desc,
-                opcode == Opcodes.INVOKEINTERFACE);
     }
 
     @Override
-    public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
-        if (api < Opcodes.ASM5) {
-            super.visitMethodInsn(opcode, owner, name, desc, itf);
-            return;
-        }
-        doVisitMethodInsn(opcode, owner, name, desc, itf);
-    }
-
-    private void doVisitMethodInsn(int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
-        if (opcode == INVOKEINTERFACE) {
+    public void visitMethodInsn(MethodInsnNode min) {
+        if (min.opcode() == INVOKEINTERFACE) {
             minSize += 5;
             maxSize += 5;
         } else {
@@ -152,36 +128,35 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
             maxSize += 3;
         }
         if (mv != null) {
-            mv.visitMethodInsn(opcode, owner, name, desc, itf);
+            mv.visitMethodInsn(min);
         }
     }
 
     @Override
-    public void visitInvokeDynamicInsn(String name, String desc, Handle bsm,
-            Object... bsmArgs) {
+    public void visitInvokeDynamicInsn(InvokeDynamicInsnNode idin) {
         minSize += 5;
         maxSize += 5;
         if (mv != null) {
-            mv.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
+            mv.visitInvokeDynamicInsn(idin);
         }
     }
 
     @Override
-    public void visitJumpInsn(final int opcode, final Label label) {
+    public void visitJumpInsn(JumpInsnNode jin) {
         minSize += 3;
-        if (opcode == GOTO || opcode == JSR) {
+        if (jin.opcode() == GOTO || jin.opcode() == JSR) {
             maxSize += 5;
         } else {
             maxSize += 8;
         }
         if (mv != null) {
-            mv.visitJumpInsn(opcode, label);
+            mv.visitJumpInsn(jin);
         }
     }
 
     @Override
-    public void visitLdcInsn(final Object cst) {
-        if (cst instanceof Long || cst instanceof Double) {
+    public void visitLdcInsn(LdcInsnNode ldc) {
+        if (ldc.cst instanceof Long || ldc.cst instanceof Double) {
             minSize += 3;
             maxSize += 3;
         } else {
@@ -189,13 +164,13 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
             maxSize += 3;
         }
         if (mv != null) {
-            mv.visitLdcInsn(cst);
+            mv.visitLdcInsn(ldc);
         }
     }
 
     @Override
-    public void visitIincInsn(final int var, final int increment) {
-        if (var > 255 || increment > 127 || increment < -128) {
+    public void visitIincInsn(IincInsnNode iin) {
+        if (iin.var > 255 || iin.incr > 127 || iin.incr < -128) {
             minSize += 6;
             maxSize += 6;
         } else {
@@ -203,36 +178,34 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
             maxSize += 3;
         }
         if (mv != null) {
-            mv.visitIincInsn(var, increment);
+            mv.visitIincInsn(iin);
         }
     }
 
     @Override
-    public void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
-        minSize += 13 + labels.length * 4;
-        maxSize += 16 + labels.length * 4;
+    public void visitTableSwitchInsn(TableSwitchInsnNode tsin) {
+        minSize += 13 + tsin.labels.size() * 4;
+        maxSize += 16 + tsin.labels.size() * 4;
         if (mv != null) {
-            mv.visitTableSwitchInsn(min, max, dflt, labels);
+            mv.visitTableSwitchInsn(tsin);
         }
     }
 
     @Override
-    public void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
-        minSize += 9 + keys.length * 8;
-        maxSize += 12 + keys.length * 8;
+    public void visitLookupSwitchInsn(LookupSwitchInsnNode lsin) {
+        minSize += 9 + lsin.keys.size() * 8;
+        maxSize += 12 + lsin.keys.size() * 8;
         if (mv != null) {
-            mv.visitLookupSwitchInsn(dflt, keys, labels);
+            mv.visitLookupSwitchInsn(lsin);
         }
     }
 
     @Override
-    public void visitMultiANewArrayInsn(final String desc, final int dims) {
+    public void visitMultiANewArrayInsn(MultiANewArrayInsnNode manain) {
         minSize += 4;
         maxSize += 4;
         if (mv != null) {
-            mv.visitMultiANewArrayInsn(desc, dims);
+            mv.visitMultiANewArrayInsn(manain);
         }
     }
 }

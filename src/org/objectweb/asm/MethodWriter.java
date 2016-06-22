@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,11 +29,13 @@
  */
 package org.objectweb.asm;
 
+import org.objectweb.asm.tree.*;
+
 /**
  * A {@link MethodVisitor} that generates methods in bytecode form. Each visit
  * method of this class appends the bytecode corresponding to the visited
  * instruction to a byte vector, in the order these methods are called.
- * 
+ *
  * @author Eric Bruneton
  * @author Eugene Kuleshov
  */
@@ -96,7 +98,7 @@ class MethodWriter extends MethodVisitor {
      * Indicates that the stack map frames must be recomputed from scratch. In
      * this case the maximum stack size and number of local variables is also
      * recomputed from scratch.
-     * 
+     *
      * @see #compute
      */
     private static final int FRAMES = 0;
@@ -104,14 +106,14 @@ class MethodWriter extends MethodVisitor {
     /**
      * Indicates that the maximum stack size and number of local variables must
      * be automatically computed.
-     * 
+     *
      * @see #compute
      */
     private static final int MAXS = 1;
 
     /**
      * Indicates that nothing must be automatically computed.
-     * 
+     *
      * @see #compute
      */
     private static final int NOTHING = 2;
@@ -119,7 +121,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The class writer to which this method must be added.
      */
-    final ClassWriter cw;
+    final org.objectweb.asm.ClassWriter cw;
 
     /**
      * Access flags of this method.
@@ -179,7 +181,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The annotation default attribute of this method. May be <tt>null</tt>.
      */
-    private ByteVector annd;
+    private org.objectweb.asm.ByteVector annd;
 
     /**
      * The runtime visible annotations of this method. May be <tt>null</tt>.
@@ -223,12 +225,12 @@ class MethodWriter extends MethodVisitor {
     /**
      * The non standard attributes of the method.
      */
-    private Attribute attrs;
+    private org.objectweb.asm.Attribute attrs;
 
     /**
      * The bytecode of this method.
      */
-    private ByteVector code = new ByteVector();
+    private org.objectweb.asm.ByteVector code = new org.objectweb.asm.ByteVector();
 
     /**
      * Maximum stack size of this method.
@@ -253,7 +255,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The StackMapTable attribute.
      */
-    private ByteVector stackMap;
+    private org.objectweb.asm.ByteVector stackMap;
 
     /**
      * The offset of the last frame that was written in the StackMapTable
@@ -263,7 +265,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * The last frame that was written in the StackMapTable attribute.
-     * 
+     *
      * @see #frame
      */
     private int[] previousFrame;
@@ -275,7 +277,7 @@ class MethodWriter extends MethodVisitor {
      * local variables start at index 3 and are followed by the operand stack
      * values. In summary frame[0] = offset, frame[1] = nLocal, frame[2] =
      * nStack, frame[3] = nLocal. All types are encoded as integers, with the
-     * same format as the one used in {@link Label}, but limited to BASE types.
+     * same format as the one used in {@link org.objectweb.asm.Label}, but limited to BASE types.
      */
     private int[] frame;
 
@@ -287,12 +289,12 @@ class MethodWriter extends MethodVisitor {
     /**
      * The first element in the exception handler list.
      */
-    private Handler firstHandler;
+    private org.objectweb.asm.Handler firstHandler;
 
     /**
      * The last element in the exception handler list.
      */
-    private Handler lastHandler;
+    private org.objectweb.asm.Handler lastHandler;
 
     /**
      * Number of entries in the MethodParameters attribute.
@@ -302,7 +304,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The MethodParameters attribute.
      */
-    private ByteVector methodParameters;
+    private org.objectweb.asm.ByteVector methodParameters;
 
     /**
      * Number of entries in the LocalVariableTable attribute.
@@ -312,7 +314,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The LocalVariableTable attribute.
      */
-    private ByteVector localVar;
+    private org.objectweb.asm.ByteVector localVar;
 
     /**
      * Number of entries in the LocalVariableTypeTable attribute.
@@ -322,7 +324,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The LocalVariableTypeTable attribute.
      */
-    private ByteVector localVarType;
+    private org.objectweb.asm.ByteVector localVarType;
 
     /**
      * Number of entries in the LineNumberTable attribute.
@@ -332,7 +334,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The LineNumberTable attribute.
      */
-    private ByteVector lineNumber;
+    private org.objectweb.asm.ByteVector lineNumber;
 
     /**
      * The start offset of the last visited instruction.
@@ -352,7 +354,7 @@ class MethodWriter extends MethodVisitor {
     /**
      * The non standard attributes of the method's code.
      */
-    private Attribute cattrs;
+    private org.objectweb.asm.Attribute cattrs;
 
     /**
      * Indicates if some jump instructions are too small and need to be resized.
@@ -378,7 +380,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Indicates what must be automatically computed.
-     * 
+     *
      * @see #FRAMES
      * @see #MAXS
      * @see #NOTHING
@@ -388,27 +390,27 @@ class MethodWriter extends MethodVisitor {
     /**
      * A list of labels. This list is the list of basic blocks in the method,
      * i.e. a list of Label objects linked to each other by their
-     * {@link Label#successor} field, in the order they are visited by
+     * {@link org.objectweb.asm.Label#successor} field, in the order they are visited by
      * {@link MethodVisitor#visitLabel}, and starting with the first basic
      * block.
      */
-    private Label labels;
+    private org.objectweb.asm.Label labels;
 
     /**
      * The previous basic block.
      */
-    private Label previousBlock;
+    private org.objectweb.asm.Label previousBlock;
 
     /**
      * The current basic block.
      */
-    private Label currentBlock;
+    private org.objectweb.asm.Label currentBlock;
 
     /**
      * The (relative) stack size after the last visited instruction. This size
      * is relative to the beginning of the current basic block, i.e., the true
      * stack size after the last visited instruction is equal to the
-     * {@link Label#inputStackTop beginStackSize} of the current basic block
+     * {@link org.objectweb.asm.Label#inputStackTop beginStackSize} of the current basic block
      * plus <tt>stackSize</tt>.
      */
     private int stackSize;
@@ -417,7 +419,7 @@ class MethodWriter extends MethodVisitor {
      * The (relative) maximum stack size after the last visited instruction.
      * This size is relative to the beginning of the current basic block, i.e.,
      * the true maximum stack size after the last visited instruction is equal
-     * to the {@link Label#inputStackTop beginStackSize} of the current basic
+     * to the {@link org.objectweb.asm.Label#inputStackTop beginStackSize} of the current basic
      * block plus <tt>stackSize</tt>.
      */
     private int maxStackSize;
@@ -428,15 +430,15 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Constructs a new {@link MethodWriter}.
-     * 
+     *
      * @param cw
      *            the class writer in which the method must be added.
      * @param access
-     *            the method's access flags (see {@link Opcodes}).
+     *            the method's access flags (see {@link org.objectweb.asm.Opcodes}).
      * @param name
      *            the method's name.
      * @param desc
-     *            the method's descriptor (see {@link Type}).
+     *            the method's descriptor (see {@link org.objectweb.asm.Type}).
      * @param signature
      *            the method's signature. May be <tt>null</tt>.
      * @param exceptions
@@ -449,11 +451,10 @@ class MethodWriter extends MethodVisitor {
      *            <tt>true</tt> if the stack map tables must be recomputed from
      *            scratch.
      */
-    MethodWriter(final ClassWriter cw, final int access, final String name,
-            final String desc, final String signature,
-            final String[] exceptions, final boolean computeMaxs,
-            final boolean computeFrames) {
-        super(Opcodes.ASM5);
+    MethodWriter(final org.objectweb.asm.ClassWriter cw, final int access, final String name,
+                 final String desc, final String signature,
+                 final String[] exceptions, final boolean computeMaxs,
+                 final boolean computeFrames) {
         if (cw.firstMethod == null) {
             cw.firstMethod = this;
         } else {
@@ -468,7 +469,7 @@ class MethodWriter extends MethodVisitor {
         this.name = cw.newUTF8(name);
         this.desc = cw.newUTF8(desc);
         this.descriptor = desc;
-        if (ClassReader.SIGNATURES) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES) {
             this.signature = signature;
         }
         if (exceptions != null && exceptions.length > 0) {
@@ -481,15 +482,15 @@ class MethodWriter extends MethodVisitor {
         this.compute = computeFrames ? FRAMES : (computeMaxs ? MAXS : NOTHING);
         if (computeMaxs || computeFrames) {
             // updates maxLocals
-            int size = Type.getArgumentsAndReturnSizes(descriptor) >> 2;
-            if ((access & Opcodes.ACC_STATIC) != 0) {
+            int size = org.objectweb.asm.Type.getArgumentsAndReturnSizes(descriptor) >> 2;
+            if ((access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0) {
                 --size;
             }
             maxLocals = size;
             currentLocals = size;
             // creates and visits the label for the first basic block
-            labels = new Label();
-            labels.status |= Label.PUSHED;
+            labels = new org.objectweb.asm.Label();
+            labels.status |= org.objectweb.asm.Label.PUSHED;
             visitLabel(labels);
         }
     }
@@ -499,33 +500,31 @@ class MethodWriter extends MethodVisitor {
     // ------------------------------------------------------------------------
 
     @Override
-    public void visitParameter(String name, int access) {
+    public void visitParameter(ParameterNode pn) {
         if (methodParameters == null) {
-            methodParameters = new ByteVector();
+            methodParameters = new org.objectweb.asm.ByteVector();
         }
         ++methodParametersCount;
-        methodParameters.putShort((name == null) ? 0 : cw.newUTF8(name))
-                .putShort(access);
+        methodParameters.putShort((pn.name == null) ? 0 : cw.newUTF8(pn.name)).putShort(pn.access);
     }
 
     @Override
     public AnnotationVisitor visitAnnotationDefault() {
-        if (!ClassReader.ANNOTATIONS) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        annd = new ByteVector();
+        annd = new org.objectweb.asm.ByteVector();
         return new AnnotationWriter(cw, false, annd, null, 0);
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+    public AnnotationVisitor visitAnnotation(AnnotationNode an, final boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write type, and reserve space for values count
-        bv.putShort(cw.newUTF8(desc)).putShort(0);
+        bv.putShort(cw.newUTF8(an.desc)).putShort(0);
         AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv, 2);
         if (visible) {
             aw.next = anns;
@@ -538,16 +537,15 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitTypeAnnotation(final int typeRef,
-            final TypePath typePath, final String desc, final boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+    public AnnotationVisitor visitTypeAnnotation(TypeAnnotationNode tan, final boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write target_type and target_info
-        AnnotationWriter.putTarget(typeRef, typePath, bv);
+        AnnotationWriter.putTarget(tan.typeRef, tan.typePath, bv);
         // write type, and reserve space for values count
-        bv.putShort(cw.newUTF8(desc)).putShort(0);
+        bv.putShort(cw.newUTF8(tan.desc)).putShort(0);
         AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv,
                 bv.length - 2);
         if (visible) {
@@ -561,39 +559,38 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitParameterAnnotation(final int parameter,
-            final String desc, final boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+    public AnnotationVisitor visitParameterAnnotation(ParameterAnnotationNode pan, final boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         if ("Ljava/lang/Synthetic;".equals(desc)) {
             // workaround for a bug in javac with synthetic parameters
             // see ClassReader.readParameterAnnotations
-            synthetics = Math.max(synthetics, parameter + 1);
+            synthetics = Math.max(synthetics, pan.parameter + 1);
             return new AnnotationWriter(cw, false, bv, null, 0);
         }
         // write type, and reserve space for values count
-        bv.putShort(cw.newUTF8(desc)).putShort(0);
+        bv.putShort(cw.newUTF8(pan.desc)).putShort(0);
         AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv, 2);
         if (visible) {
             if (panns == null) {
-                panns = new AnnotationWriter[Type.getArgumentTypes(descriptor).length];
+                panns = new AnnotationWriter[org.objectweb.asm.Type.getArgumentTypes(descriptor).length];
             }
-            aw.next = panns[parameter];
-            panns[parameter] = aw;
+            aw.next = panns[pan.parameter];
+            panns[pan.parameter] = aw;
         } else {
             if (ipanns == null) {
-                ipanns = new AnnotationWriter[Type.getArgumentTypes(descriptor).length];
+                ipanns = new AnnotationWriter[org.objectweb.asm.Type.getArgumentTypes(descriptor).length];
             }
-            aw.next = ipanns[parameter];
-            ipanns[parameter] = aw;
+            aw.next = ipanns[pan.parameter];
+            ipanns[pan.parameter] = aw;
         }
         return aw;
     }
 
     @Override
-    public void visitAttribute(final Attribute attr) {
+    public void visitAttribute(final org.objectweb.asm.Attribute attr) {
         if (attr.isCodeAttribute()) {
             attr.next = cattrs;
             cattrs = attr;
@@ -608,98 +605,92 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitFrame(final int type, final int nLocal,
-            final Object[] local, final int nStack, final Object[] stack) {
-        if (!ClassReader.FRAMES || compute == FRAMES) {
+    public void visitFrame(FrameNode node) {
+        if (!org.objectweb.asm.ClassReader.FRAMES || compute == FRAMES) {
             return;
         }
-
-        if (type == Opcodes.F_NEW) {
+        int nLocal = node.local != null ? node.local.size() : 0;
+        int nStack = node.stack != null ? node.stack.size() : 0;
+        if (node.type == org.objectweb.asm.Opcodes.F_NEW) {
             if (previousFrame == null) {
                 visitImplicitFirstFrame();
             }
             currentLocals = nLocal;
             int frameIndex = startFrame(code.length, nLocal, nStack);
             for (int i = 0; i < nLocal; ++i) {
-                if (local[i] instanceof String) {
-                    frame[frameIndex++] = Frame.OBJECT
-                            | cw.addType((String) local[i]);
-                } else if (local[i] instanceof Integer) {
-                    frame[frameIndex++] = ((Integer) local[i]).intValue();
+                if (node.local.get(i) instanceof String) {
+                    frame[frameIndex++] = org.objectweb.asm.Frame.OBJECT | cw.addType((String) node.local.get(i));
+                } else if (node.local.get(i) instanceof Integer) {
+                    frame[frameIndex++] = (Integer) node.local.get(i);
                 } else {
-                    frame[frameIndex++] = Frame.UNINITIALIZED
-                            | cw.addUninitializedType("",
-                                    ((Label) local[i]).position);
+                    frame[frameIndex++] = org.objectweb.asm.Frame.UNINITIALIZED | cw.addUninitializedType("",
+                            ((org.objectweb.asm.Label) node.local.get(i)).position);
                 }
             }
             for (int i = 0; i < nStack; ++i) {
-                if (stack[i] instanceof String) {
-                    frame[frameIndex++] = Frame.OBJECT
-                            | cw.addType((String) stack[i]);
-                } else if (stack[i] instanceof Integer) {
-                    frame[frameIndex++] = ((Integer) stack[i]).intValue();
+                if (node.stack.get(i) instanceof String) {
+                    frame[frameIndex++] = org.objectweb.asm.Frame.OBJECT | cw.addType((String) node.stack.get(i));
+                } else if (node.stack.get(i) instanceof Integer) {
+                    frame[frameIndex++] = (Integer) node.stack.get(i);
                 } else {
-                    frame[frameIndex++] = Frame.UNINITIALIZED
-                            | cw.addUninitializedType("",
-                                    ((Label) stack[i]).position);
+                    frame[frameIndex++] = org.objectweb.asm.Frame.UNINITIALIZED | cw.addUninitializedType("",
+                            ((org.objectweb.asm.Label) node.stack.get(i)).position);
                 }
             }
             endFrame();
         } else {
             int delta;
             if (stackMap == null) {
-                stackMap = new ByteVector();
+                stackMap = new org.objectweb.asm.ByteVector();
                 delta = code.length;
             } else {
                 delta = code.length - previousFrameOffset - 1;
                 if (delta < 0) {
-                    if (type == Opcodes.F_SAME) {
+                    if (node.type == org.objectweb.asm.Opcodes.F_SAME) {
                         return;
                     } else {
                         throw new IllegalStateException();
                     }
                 }
             }
-
-            switch (type) {
-            case Opcodes.F_FULL:
-                currentLocals = nLocal;
-                stackMap.putByte(FULL_FRAME).putShort(delta).putShort(nLocal);
-                for (int i = 0; i < nLocal; ++i) {
-                    writeFrameType(local[i]);
-                }
-                stackMap.putShort(nStack);
-                for (int i = 0; i < nStack; ++i) {
-                    writeFrameType(stack[i]);
-                }
-                break;
-            case Opcodes.F_APPEND:
-                currentLocals += nLocal;
-                stackMap.putByte(SAME_FRAME_EXTENDED + nLocal).putShort(delta);
-                for (int i = 0; i < nLocal; ++i) {
-                    writeFrameType(local[i]);
-                }
-                break;
-            case Opcodes.F_CHOP:
-                currentLocals -= nLocal;
-                stackMap.putByte(SAME_FRAME_EXTENDED - nLocal).putShort(delta);
-                break;
-            case Opcodes.F_SAME:
-                if (delta < 64) {
-                    stackMap.putByte(delta);
-                } else {
-                    stackMap.putByte(SAME_FRAME_EXTENDED).putShort(delta);
-                }
-                break;
-            case Opcodes.F_SAME1:
-                if (delta < 64) {
-                    stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME + delta);
-                } else {
-                    stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED)
-                            .putShort(delta);
-                }
-                writeFrameType(stack[0]);
-                break;
+            switch (node.type) {
+                case org.objectweb.asm.Opcodes.F_FULL:
+                    currentLocals = nLocal;
+                    stackMap.putByte(FULL_FRAME).putShort(delta).putShort(nLocal);
+                    for (int i = 0; i < nLocal; ++i) {
+                        writeFrameType(node.local.get(i));
+                    }
+                    stackMap.putShort(nStack);
+                    for (int i = 0; i < nStack; ++i) {
+                        writeFrameType(node.stack.get(i));
+                    }
+                    break;
+                case org.objectweb.asm.Opcodes.F_APPEND:
+                    currentLocals += nLocal;
+                    stackMap.putByte(SAME_FRAME_EXTENDED + nLocal).putShort(delta);
+                    for (int i = 0; i < nLocal; ++i) {
+                        writeFrameType(node.local.get(i));
+                    }
+                    break;
+                case org.objectweb.asm.Opcodes.F_CHOP:
+                    currentLocals -= nLocal;
+                    stackMap.putByte(SAME_FRAME_EXTENDED - nLocal).putShort(delta);
+                    break;
+                case org.objectweb.asm.Opcodes.F_SAME:
+                    if (delta < 64) {
+                        stackMap.putByte(delta);
+                    } else {
+                        stackMap.putByte(SAME_FRAME_EXTENDED).putShort(delta);
+                    }
+                    break;
+                case org.objectweb.asm.Opcodes.F_SAME1:
+                    if (delta < 64) {
+                        stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME + delta);
+                    } else {
+                        stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED).putShort(delta);
+                    }
+                    writeFrameType(node.stack.get(0));
+                    break;
             }
 
             previousFrameOffset = code.length;
@@ -711,7 +702,8 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitInsn(final int opcode) {
+    public void visitInsn(InsnNode in) {
+        int opcode = in.opcode();
         lastCodeOffset = code.length;
         // adds the instruction to the bytecode of the method
         code.putByte(opcode);
@@ -722,28 +714,29 @@ class MethodWriter extends MethodVisitor {
                 currentBlock.frame.execute(opcode, 0, null, null);
             } else {
                 // updates current and max stack sizes
-                int size = stackSize + Frame.SIZE[opcode];
+                int size = stackSize + org.objectweb.asm.Frame.SIZE[opcode];
                 if (size > maxStackSize) {
                     maxStackSize = size;
                 }
                 stackSize = size;
             }
             // if opcode == ATHROW or xRETURN, ends current block (no successor)
-            if ((opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN)
-                    || opcode == Opcodes.ATHROW) {
+            if ((opcode >= org.objectweb.asm.Opcodes.IRETURN && opcode <= org.objectweb.asm.Opcodes.RETURN)
+                    || opcode == org.objectweb.asm.Opcodes.ATHROW) {
                 noSuccessor();
             }
         }
     }
 
     @Override
-    public void visitIntInsn(final int opcode, final int operand) {
+    public void visitIntInsn(IntInsnNode iin) {
+        int opcode = iin.opcode();
         lastCodeOffset = code.length;
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(opcode, operand, null, null);
-            } else if (opcode != Opcodes.NEWARRAY) {
+                currentBlock.frame.execute(opcode, iin.operand, null, null);
+            } else if (opcode != org.objectweb.asm.Opcodes.NEWARRAY) {
                 // updates current and max stack sizes only for NEWARRAY
                 // (stack size variation = 0 for BIPUSH or SIPUSH)
                 int size = stackSize + 1;
@@ -754,31 +747,32 @@ class MethodWriter extends MethodVisitor {
             }
         }
         // adds the instruction to the bytecode of the method
-        if (opcode == Opcodes.SIPUSH) {
-            code.put12(opcode, operand);
+        if (opcode == org.objectweb.asm.Opcodes.SIPUSH) {
+            code.put12(opcode, iin.operand);
         } else { // BIPUSH or NEWARRAY
-            code.put11(opcode, operand);
+            code.put11(opcode, iin.operand);
         }
     }
 
     @Override
-    public void visitVarInsn(final int opcode, final int var) {
+    public void visitVarInsn(VarInsnNode vin) {
+        int opcode = vin.opcode();
         lastCodeOffset = code.length;
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(opcode, var, null, null);
+                currentBlock.frame.execute(opcode, vin.var, null, null);
             } else {
                 // updates current and max stack sizes
-                if (opcode == Opcodes.RET) {
+                if (opcode == org.objectweb.asm.Opcodes.RET) {
                     // no stack change, but end of current block (no successor)
-                    currentBlock.status |= Label.RET;
+                    currentBlock.status |= org.objectweb.asm.Label.RET;
                     // save 'stackSize' here for future use
                     // (see {@link #findSubroutineSuccessors})
                     currentBlock.inputStackTop = stackSize;
                     noSuccessor();
                 } else { // xLOAD or xSTORE
-                    int size = stackSize + Frame.SIZE[opcode];
+                    int size = stackSize + org.objectweb.asm.Frame.SIZE[opcode];
                     if (size > maxStackSize) {
                         maxStackSize = size;
                     }
@@ -789,46 +783,47 @@ class MethodWriter extends MethodVisitor {
         if (compute != NOTHING) {
             // updates max locals
             int n;
-            if (opcode == Opcodes.LLOAD || opcode == Opcodes.DLOAD
-                    || opcode == Opcodes.LSTORE || opcode == Opcodes.DSTORE) {
-                n = var + 2;
+            if (opcode == org.objectweb.asm.Opcodes.LLOAD || opcode == org.objectweb.asm.Opcodes.DLOAD
+                    || opcode == org.objectweb.asm.Opcodes.LSTORE || opcode == org.objectweb.asm.Opcodes.DSTORE) {
+                n = vin.var + 2;
             } else {
-                n = var + 1;
+                n = vin.var + 1;
             }
             if (n > maxLocals) {
                 maxLocals = n;
             }
         }
         // adds the instruction to the bytecode of the method
-        if (var < 4 && opcode != Opcodes.RET) {
+        if (vin.var < 4 && opcode != org.objectweb.asm.Opcodes.RET) {
             int opt;
-            if (opcode < Opcodes.ISTORE) {
+            if (opcode < org.objectweb.asm.Opcodes.ISTORE) {
                 /* ILOAD_0 */
-                opt = 26 + ((opcode - Opcodes.ILOAD) << 2) + var;
+                opt = 26 + ((opcode - org.objectweb.asm.Opcodes.ILOAD) << 2) + vin.var;
             } else {
                 /* ISTORE_0 */
-                opt = 59 + ((opcode - Opcodes.ISTORE) << 2) + var;
+                opt = 59 + ((opcode - org.objectweb.asm.Opcodes.ISTORE) << 2) + vin.var;
             }
             code.putByte(opt);
-        } else if (var >= 256) {
-            code.putByte(196 /* WIDE */).put12(opcode, var);
+        } else if (vin.var >= 256) {
+            code.putByte(196 /* WIDE */).put12(opcode, vin.var);
         } else {
-            code.put11(opcode, var);
+            code.put11(opcode, vin.var);
         }
-        if (opcode >= Opcodes.ISTORE && compute == FRAMES && handlerCount > 0) {
-            visitLabel(new Label());
+        if (opcode >= org.objectweb.asm.Opcodes.ISTORE && compute == FRAMES && handlerCount > 0) {
+            visitLabel(new org.objectweb.asm.Label());
         }
     }
 
     @Override
-    public void visitTypeInsn(final int opcode, final String type) {
+    public void visitTypeInsn(TypeInsnNode tin) {
+        int opcode = tin.opcode();
         lastCodeOffset = code.length;
-        Item i = cw.newClassItem(type);
+        org.objectweb.asm.Item i = cw.newClassItem(tin.desc);
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
                 currentBlock.frame.execute(opcode, code.length, cw, i);
-            } else if (opcode == Opcodes.NEW) {
+            } else if (opcode == org.objectweb.asm.Opcodes.NEW) {
                 // updates current and max stack sizes only if opcode == NEW
                 // (no stack change for ANEWARRAY, CHECKCAST, INSTANCEOF)
                 int size = stackSize + 1;
@@ -843,10 +838,10 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitFieldInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+    public void visitFieldInsn(FieldInsnNode fin) {
+        int opcode = fin.opcode();
         lastCodeOffset = code.length;
-        Item i = cw.newFieldItem(owner, name, desc);
+        org.objectweb.asm.Item i = cw.newFieldItem(fin.owner, fin.name, fin.desc);
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
@@ -854,21 +849,21 @@ class MethodWriter extends MethodVisitor {
             } else {
                 int size;
                 // computes the stack size variation
-                char c = desc.charAt(0);
+                char c = fin.desc.charAt(0);
                 switch (opcode) {
-                case Opcodes.GETSTATIC:
-                    size = stackSize + (c == 'D' || c == 'J' ? 2 : 1);
-                    break;
-                case Opcodes.PUTSTATIC:
-                    size = stackSize + (c == 'D' || c == 'J' ? -2 : -1);
-                    break;
-                case Opcodes.GETFIELD:
-                    size = stackSize + (c == 'D' || c == 'J' ? 1 : 0);
-                    break;
-                // case Constants.PUTFIELD:
-                default:
-                    size = stackSize + (c == 'D' || c == 'J' ? -3 : -2);
-                    break;
+                    case org.objectweb.asm.Opcodes.GETSTATIC:
+                        size = stackSize + (c == 'D' || c == 'J' ? 2 : 1);
+                        break;
+                    case org.objectweb.asm.Opcodes.PUTSTATIC:
+                        size = stackSize + (c == 'D' || c == 'J' ? -2 : -1);
+                        break;
+                    case org.objectweb.asm.Opcodes.GETFIELD:
+                        size = stackSize + (c == 'D' || c == 'J' ? 1 : 0);
+                        break;
+                    // case Constants.PUTFIELD:
+                    default:
+                        size = stackSize + (c == 'D' || c == 'J' ? -3 : -2);
+                        break;
                 }
                 // updates current and max stack sizes
                 if (size > maxStackSize) {
@@ -882,10 +877,10 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
+    public void visitMethodInsn(MethodInsnNode min) {
+        int opcode = min.opcode();
         lastCodeOffset = code.length;
-        Item i = cw.newMethodItem(owner, name, desc, itf);
+        org.objectweb.asm.Item i = cw.newMethodItem(min.owner, min.name, min.desc, min.itf);
         int argSize = i.intVal;
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
@@ -903,13 +898,13 @@ class MethodWriter extends MethodVisitor {
                 if (argSize == 0) {
                     // the above sizes have not been computed yet,
                     // so we compute them...
-                    argSize = Type.getArgumentsAndReturnSizes(desc);
+                    argSize = org.objectweb.asm.Type.getArgumentsAndReturnSizes(min.desc);
                     // ... and we save them in order
                     // not to recompute them in the future
                     i.intVal = argSize;
                 }
                 int size;
-                if (opcode == Opcodes.INVOKESTATIC) {
+                if (opcode == org.objectweb.asm.Opcodes.INVOKESTATIC) {
                     size = stackSize - (argSize >> 2) + (argSize & 0x03) + 1;
                 } else {
                     size = stackSize - (argSize >> 2) + (argSize & 0x03);
@@ -922,27 +917,26 @@ class MethodWriter extends MethodVisitor {
             }
         }
         // adds the instruction to the bytecode of the method
-        if (opcode == Opcodes.INVOKEINTERFACE) {
+        if (opcode == org.objectweb.asm.Opcodes.INVOKEINTERFACE) {
             if (argSize == 0) {
-                argSize = Type.getArgumentsAndReturnSizes(desc);
+                argSize = org.objectweb.asm.Type.getArgumentsAndReturnSizes(min.desc);
                 i.intVal = argSize;
             }
-            code.put12(Opcodes.INVOKEINTERFACE, i.index).put11(argSize >> 2, 0);
+            code.put12(org.objectweb.asm.Opcodes.INVOKEINTERFACE, i.index).put11(argSize >> 2, 0);
         } else {
             code.put12(opcode, i.index);
         }
     }
 
     @Override
-    public void visitInvokeDynamicInsn(final String name, final String desc,
-            final Handle bsm, final Object... bsmArgs) {
+    public void visitInvokeDynamicInsn(InvokeDynamicInsnNode idin) {
         lastCodeOffset = code.length;
-        Item i = cw.newInvokeDynamicItem(name, desc, bsm, bsmArgs);
+        org.objectweb.asm.Item i = cw.newInvokeDynamicItem(idin.name, idin.desc, idin.bsm, idin.bsmArgs);
         int argSize = i.intVal;
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(Opcodes.INVOKEDYNAMIC, 0, cw, i);
+                currentBlock.frame.execute(org.objectweb.asm.Opcodes.INVOKEDYNAMIC, 0, cw, i);
             } else {
                 /*
                  * computes the stack size variation. In order not to recompute
@@ -955,13 +949,12 @@ class MethodWriter extends MethodVisitor {
                 if (argSize == 0) {
                     // the above sizes have not been computed yet,
                     // so we compute them...
-                    argSize = Type.getArgumentsAndReturnSizes(desc);
+                    argSize = org.objectweb.asm.Type.getArgumentsAndReturnSizes(idin.desc);
                     // ... and we save them in order
                     // not to recompute them in the future
                     i.intVal = argSize;
                 }
                 int size = stackSize - (argSize >> 2) + (argSize & 0x03) + 1;
-
                 // updates current and max stack sizes
                 if (size > maxStackSize) {
                     maxStackSize = size;
@@ -970,36 +963,38 @@ class MethodWriter extends MethodVisitor {
             }
         }
         // adds the instruction to the bytecode of the method
-        code.put12(Opcodes.INVOKEDYNAMIC, i.index);
+        code.put12(org.objectweb.asm.Opcodes.INVOKEDYNAMIC, i.index);
         code.putShort(0);
     }
 
     @Override
-    public void visitJumpInsn(final int opcode, final Label label) {
+    public void visitJumpInsn(JumpInsnNode jin) {
+        int opcode = jin.opcode();
+        org.objectweb.asm.Label label = jin.label.getLabel();
         lastCodeOffset = code.length;
-        Label nextInsn = null;
+        org.objectweb.asm.Label nextInsn = null;
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
                 currentBlock.frame.execute(opcode, 0, null, null);
                 // 'label' is the target of a jump instruction
-                label.getFirst().status |= Label.TARGET;
+                label.getFirst().status |= org.objectweb.asm.Label.TARGET;
                 // adds 'label' as a successor of this basic block
-                addSuccessor(Edge.NORMAL, label);
-                if (opcode != Opcodes.GOTO) {
+                addSuccessor(org.objectweb.asm.Edge.NORMAL, label);
+                if (opcode != org.objectweb.asm.Opcodes.GOTO) {
                     // creates a Label for the next basic block
-                    nextInsn = new Label();
+                    nextInsn = new org.objectweb.asm.Label();
                 }
             } else {
-                if (opcode == Opcodes.JSR) {
-                    if ((label.status & Label.SUBROUTINE) == 0) {
-                        label.status |= Label.SUBROUTINE;
+                if (opcode == org.objectweb.asm.Opcodes.JSR) {
+                    if ((label.status & org.objectweb.asm.Label.SUBROUTINE) == 0) {
+                        label.status |= org.objectweb.asm.Label.SUBROUTINE;
                         ++subroutines;
                     }
-                    currentBlock.status |= Label.JSR;
+                    currentBlock.status |= org.objectweb.asm.Label.JSR;
                     addSuccessor(stackSize + 1, label);
                     // creates a Label for the next basic block
-                    nextInsn = new Label();
+                    nextInsn = new org.objectweb.asm.Label();
                     /*
                      * note that, by construction in this method, a JSR block
                      * has at least two successors in the control flow graph:
@@ -1010,13 +1005,13 @@ class MethodWriter extends MethodVisitor {
                     // updates current stack size (max stack size unchanged
                     // because stack size variation always negative in this
                     // case)
-                    stackSize += Frame.SIZE[opcode];
+                    stackSize += org.objectweb.asm.Frame.SIZE[opcode];
                     addSuccessor(stackSize, label);
                 }
             }
         }
         // adds the instruction to the bytecode of the method
-        if ((label.status & Label.RESOLVED) != 0
+        if ((label.status & org.objectweb.asm.Label.RESOLVED) != 0
                 && label.position - code.length < Short.MIN_VALUE) {
             /*
              * case of a backward jump with an offset < -32768. In this case we
@@ -1025,15 +1020,15 @@ class MethodWriter extends MethodVisitor {
              * "opposite" opcode of IFxxx (i.e., IFNE for IFEQ) and where <l'>
              * designates the instruction just after the GOTO_W.
              */
-            if (opcode == Opcodes.GOTO) {
+            if (opcode == org.objectweb.asm.Opcodes.GOTO) {
                 code.putByte(200); // GOTO_W
-            } else if (opcode == Opcodes.JSR) {
+            } else if (opcode == org.objectweb.asm.Opcodes.JSR) {
                 code.putByte(201); // JSR_W
             } else {
                 // if the IF instruction is transformed into IFNOT GOTO_W the
                 // next instruction becomes the target of the IFNOT instruction
                 if (nextInsn != null) {
-                    nextInsn.status |= Label.TARGET;
+                    nextInsn.status |= org.objectweb.asm.Label.TARGET;
                 }
                 code.putByte(opcode <= 166 ? ((opcode + 1) ^ 1) - 1
                         : opcode ^ 1);
@@ -1059,41 +1054,41 @@ class MethodWriter extends MethodVisitor {
                 // current block, and starts a new basic block
                 visitLabel(nextInsn);
             }
-            if (opcode == Opcodes.GOTO) {
+            if (opcode == org.objectweb.asm.Opcodes.GOTO) {
                 noSuccessor();
             }
         }
     }
 
     @Override
-    public void visitLabel(final Label label) {
+    public void visitLabel(final org.objectweb.asm.Label label) {
         // resolves previous forward references to label, if any
         resize |= label.resolve(this, code.length, code.data);
         // updates currentBlock
-        if ((label.status & Label.DEBUG) != 0) {
+        if ((label.status & org.objectweb.asm.Label.DEBUG) != 0) {
             return;
         }
         if (compute == FRAMES) {
             if (currentBlock != null) {
                 if (label.position == currentBlock.position) {
                     // successive labels, do not start a new basic block
-                    currentBlock.status |= (label.status & Label.TARGET);
+                    currentBlock.status |= (label.status & org.objectweb.asm.Label.TARGET);
                     label.frame = currentBlock.frame;
                     return;
                 }
                 // ends current block (with one new successor)
-                addSuccessor(Edge.NORMAL, label);
+                addSuccessor(org.objectweb.asm.Edge.NORMAL, label);
             }
             // begins a new current block
             currentBlock = label;
             if (label.frame == null) {
-                label.frame = new Frame();
+                label.frame = new org.objectweb.asm.Frame();
                 label.frame.owner = label;
             }
             // updates the basic block list
             if (previousBlock != null) {
                 if (label.position == previousBlock.position) {
-                    previousBlock.status |= (label.status & Label.TARGET);
+                    previousBlock.status |= (label.status & org.objectweb.asm.Label.TARGET);
                     label.frame = previousBlock.frame;
                     currentBlock = previousBlock;
                     return;
@@ -1121,17 +1116,17 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitLdcInsn(final Object cst) {
+    public void visitLdcInsn(LdcInsnNode ldc) {
         lastCodeOffset = code.length;
-        Item i = cw.newConstItem(cst);
+        org.objectweb.asm.Item i = cw.newConstItem(ldc.cst);
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(Opcodes.LDC, 0, cw, i);
+                currentBlock.frame.execute(org.objectweb.asm.Opcodes.LDC, 0, cw, i);
             } else {
                 int size;
                 // computes the stack size variation
-                if (i.type == ClassWriter.LONG || i.type == ClassWriter.DOUBLE) {
+                if (i.type == org.objectweb.asm.ClassWriter.LONG || i.type == org.objectweb.asm.ClassWriter.DOUBLE) {
                     size = stackSize + 2;
                 } else {
                     size = stackSize + 1;
@@ -1145,85 +1140,86 @@ class MethodWriter extends MethodVisitor {
         }
         // adds the instruction to the bytecode of the method
         int index = i.index;
-        if (i.type == ClassWriter.LONG || i.type == ClassWriter.DOUBLE) {
+        if (i.type == org.objectweb.asm.ClassWriter.LONG || i.type == org.objectweb.asm.ClassWriter.DOUBLE) {
             code.put12(20 /* LDC2_W */, index);
         } else if (index >= 256) {
             code.put12(19 /* LDC_W */, index);
         } else {
-            code.put11(Opcodes.LDC, index);
+            code.put11(org.objectweb.asm.Opcodes.LDC, index);
         }
     }
 
     @Override
-    public void visitIincInsn(final int var, final int increment) {
+    public void visitIincInsn(IincInsnNode iin) {
         lastCodeOffset = code.length;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(Opcodes.IINC, var, null, null);
+                currentBlock.frame.execute(org.objectweb.asm.Opcodes.IINC, iin.var, null, null);
             }
         }
         if (compute != NOTHING) {
             // updates max locals
-            int n = var + 1;
+            int n = iin.var + 1;
             if (n > maxLocals) {
                 maxLocals = n;
             }
         }
         // adds the instruction to the bytecode of the method
-        if ((var > 255) || (increment > 127) || (increment < -128)) {
-            code.putByte(196 /* WIDE */).put12(Opcodes.IINC, var)
-                    .putShort(increment);
+        if ((iin.var > 255) || (iin.incr > 127) || (iin.incr < -128)) {
+            code.putByte(196 /* WIDE */).put12(org.objectweb.asm.Opcodes.IINC, iin.var).putShort(iin.incr);
         } else {
-            code.putByte(Opcodes.IINC).put11(var, increment);
+            code.putByte(org.objectweb.asm.Opcodes.IINC).put11(iin.var, iin.incr);
         }
     }
 
     @Override
-    public void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
+    public void visitTableSwitchInsn(TableSwitchInsnNode tsin) {
         lastCodeOffset = code.length;
         // adds the instruction to the bytecode of the method
         int source = code.length;
-        code.putByte(Opcodes.TABLESWITCH);
+        code.putByte(org.objectweb.asm.Opcodes.TABLESWITCH);
         code.putByteArray(null, 0, (4 - code.length % 4) % 4);
-        dflt.put(this, code, source, true);
-        code.putInt(min).putInt(max);
+        tsin.dflt.getLabel().put(this, code, source, true);
+        code.putInt(tsin.min).putInt(tsin.max);
+        org.objectweb.asm.Label[] labels = new org.objectweb.asm.Label[tsin.labels.size()];
         for (int i = 0; i < labels.length; ++i) {
+            labels[i] = tsin.labels.get(i).getLabel();
             labels[i].put(this, code, source, true);
         }
         // updates currentBlock
-        visitSwitchInsn(dflt, labels);
+        visitSwitchInsn(tsin.dflt.getLabel(), labels);
     }
 
     @Override
-    public void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
+    public void visitLookupSwitchInsn(LookupSwitchInsnNode lsin) {
         lastCodeOffset = code.length;
         // adds the instruction to the bytecode of the method
         int source = code.length;
-        code.putByte(Opcodes.LOOKUPSWITCH);
+        code.putByte(org.objectweb.asm.Opcodes.LOOKUPSWITCH);
         code.putByteArray(null, 0, (4 - code.length % 4) % 4);
-        dflt.put(this, code, source, true);
-        code.putInt(labels.length);
+        lsin.dflt.getLabel().put(this, code, source, true);
+        code.putInt(lsin.labels.size());
+        org.objectweb.asm.Label[] labels = new org.objectweb.asm.Label[lsin.labels.size()];
         for (int i = 0; i < labels.length; ++i) {
-            code.putInt(keys[i]);
+            code.putInt(lsin.keys.get(i));
+            labels[i] = lsin.labels.get(i).getLabel();
             labels[i].put(this, code, source, true);
         }
         // updates currentBlock
-        visitSwitchInsn(dflt, labels);
+        visitSwitchInsn(lsin.dflt.getLabel(), labels);
     }
 
-    private void visitSwitchInsn(final Label dflt, final Label[] labels) {
+    private void visitSwitchInsn(final org.objectweb.asm.Label dflt, final org.objectweb.asm.Label[] labels) {
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(Opcodes.LOOKUPSWITCH, 0, null, null);
+                currentBlock.frame.execute(org.objectweb.asm.Opcodes.LOOKUPSWITCH, 0, null, null);
                 // adds current block successors
-                addSuccessor(Edge.NORMAL, dflt);
-                dflt.getFirst().status |= Label.TARGET;
+                addSuccessor(org.objectweb.asm.Edge.NORMAL, dflt);
+                dflt.getFirst().status |= org.objectweb.asm.Label.TARGET;
                 for (int i = 0; i < labels.length; ++i) {
-                    addSuccessor(Edge.NORMAL, labels[i]);
-                    labels[i].getFirst().status |= Label.TARGET;
+                    addSuccessor(org.objectweb.asm.Edge.NORMAL, labels[i]);
+                    labels[i].getFirst().status |= org.objectweb.asm.Label.TARGET;
                 }
             } else {
                 // updates current stack size (max stack size unchanged)
@@ -1240,37 +1236,36 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitMultiANewArrayInsn(final String desc, final int dims) {
+    public void visitMultiANewArrayInsn(MultiANewArrayInsnNode manain) {
         lastCodeOffset = code.length;
-        Item i = cw.newClassItem(desc);
+        org.objectweb.asm.Item i = cw.newClassItem(manain.desc);
         // Label currentBlock = this.currentBlock;
         if (currentBlock != null) {
             if (compute == FRAMES) {
-                currentBlock.frame.execute(Opcodes.MULTIANEWARRAY, dims, cw, i);
+                currentBlock.frame.execute(org.objectweb.asm.Opcodes.MULTIANEWARRAY, manain.dims, cw, i);
             } else {
                 // updates current stack size (max stack size unchanged because
                 // stack size variation always negative or null)
-                stackSize += 1 - dims;
+                stackSize += 1 - manain.dims;
             }
         }
         // adds the instruction to the bytecode of the method
-        code.put12(Opcodes.MULTIANEWARRAY, i.index).putByte(dims);
+        code.put12(org.objectweb.asm.Opcodes.MULTIANEWARRAY, i.index).putByte(manain.dims);
     }
 
     @Override
-    public AnnotationVisitor visitInsnAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+    public AnnotationVisitor visitInsnAnnotation(TypeAnnotationNode tan, boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write target_type and target_info
+        int typeRef = tan.typeRef;
         typeRef = (typeRef & 0xFF0000FF) | (lastCodeOffset << 8);
-        AnnotationWriter.putTarget(typeRef, typePath, bv);
+        AnnotationWriter.putTarget(typeRef, tan.typePath, bv);
         // write type, and reserve space for values count
-        bv.putShort(cw.newUTF8(desc)).putShort(0);
-        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv,
-                bv.length - 2);
+        bv.putShort(cw.newUTF8(tan.desc)).putShort(0);
+        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv, bv.length - 2);
         if (visible) {
             aw.next = ctanns;
             ctanns = aw;
@@ -1282,15 +1277,14 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitTryCatchBlock(final Label start, final Label end,
-            final Label handler, final String type) {
+    public void visitTryCatchBlock(TryCatchBlockNode tcbn) {
         ++handlerCount;
-        Handler h = new Handler();
-        h.start = start;
-        h.end = end;
-        h.handler = handler;
-        h.desc = type;
-        h.type = type != null ? cw.newClass(type) : 0;
+        org.objectweb.asm.Handler h = new org.objectweb.asm.Handler();
+        h.start = tcbn.start.getLabel();
+        h.end = tcbn.end.getLabel();
+        h.handler = tcbn.handler.getLabel();
+        h.desc = tcbn.type;
+        h.type = tcbn.type != null ? cw.newClass(tcbn.type) : 0;
         if (lastHandler == null) {
             firstHandler = h;
         } else {
@@ -1300,18 +1294,16 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+    public AnnotationVisitor visitTryCatchAnnotation(TypeAnnotationNode tan, boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write target_type and target_info
-        AnnotationWriter.putTarget(typeRef, typePath, bv);
+        AnnotationWriter.putTarget(tan.typeRef, tan.typePath, bv);
         // write type, and reserve space for values count
-        bv.putShort(cw.newUTF8(desc)).putShort(0);
-        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv,
-                bv.length - 2);
+        bv.putShort(cw.newUTF8(tan.desc)).putShort(0);
+        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv, bv.length - 2);
         if (visible) {
             aw.next = ctanns;
             ctanns = aw;
@@ -1323,31 +1315,27 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+    public void visitLocalVariable(LocalVariableNode lvn) {
         if (signature != null) {
             if (localVarType == null) {
-                localVarType = new ByteVector();
+                localVarType = new org.objectweb.asm.ByteVector();
             }
             ++localVarTypeCount;
-            localVarType.putShort(start.position)
-                    .putShort(end.position - start.position)
-                    .putShort(cw.newUTF8(name)).putShort(cw.newUTF8(signature))
-                    .putShort(index);
+            localVarType.putShort(lvn.start.getLabel().position)
+                    .putShort(lvn.end.getLabel().position - lvn.start.getLabel().position)
+                    .putShort(cw.newUTF8(lvn.name)).putShort(cw.newUTF8(signature)).putShort(lvn.index);
         }
         if (localVar == null) {
-            localVar = new ByteVector();
+            localVar = new org.objectweb.asm.ByteVector();
         }
         ++localVarCount;
-        localVar.putShort(start.position)
-                .putShort(end.position - start.position)
-                .putShort(cw.newUTF8(name)).putShort(cw.newUTF8(desc))
-                .putShort(index);
+        localVar.putShort(lvn.start.getLabel().position)
+                .putShort(lvn.end.getLabel().position - lvn.start.getLabel().position)
+                .putShort(cw.newUTF8(lvn.name)).putShort(cw.newUTF8(lvn.desc)).putShort(lvn.index);
         if (compute != NOTHING) {
             // updates max locals
-            char c = desc.charAt(0);
-            int n = index + (c == 'J' || c == 'D' ? 2 : 1);
+            char c = lvn.desc.charAt(0);
+            int n = lvn.index + (c == 'J' || c == 'D' ? 2 : 1);
             if (n > maxLocals) {
                 maxLocals = n;
             }
@@ -1355,30 +1343,27 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+    public AnnotationVisitor visitLocalVariableAnnotation(LocalVariableAnnotationNode lvan, boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write target_type and target_info
-        bv.putByte(typeRef >>> 24).putShort(start.length);
-        for (int i = 0; i < start.length; ++i) {
-            bv.putShort(start[i].position)
-                    .putShort(end[i].position - start[i].position)
-                    .putShort(index[i]);
+        bv.putByte(lvan.typeRef >>> 24).putShort(lvan.start.size());
+        for (int i = 0; i < lvan.start.size(); ++i) {
+            bv.putShort(lvan.start.get(i).getLabel().position)
+                    .putShort(lvan.end.get(i).getLabel().position - lvan.start.get(i).getLabel().position)
+                    .putShort(lvan.index.get(i));
         }
-        if (typePath == null) {
+        if (lvan.typePath == null) {
             bv.putByte(0);
         } else {
-            int length = typePath.b[typePath.offset] * 2 + 1;
-            bv.putByteArray(typePath.b, typePath.offset, length);
+            int length = lvan.typePath.b[lvan.typePath.offset] * 2 + 1;
+            bv.putByteArray(lvan.typePath.b, lvan.typePath.offset, length);
         }
         // write type, and reserve space for values count
-        bv.putShort(cw.newUTF8(desc)).putShort(0);
-        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv,
-                bv.length - 2);
+        bv.putShort(cw.newUTF8(lvan.desc)).putShort(0);
+        AnnotationWriter aw = new AnnotationWriter(cw, true, bv, bv, bv.length - 2);
         if (visible) {
             aw.next = ctanns;
             ctanns = aw;
@@ -1390,42 +1375,42 @@ class MethodWriter extends MethodVisitor {
     }
 
     @Override
-    public void visitLineNumber(final int line, final Label start) {
+    public void visitLineNumber(LineNumberNode lnn) {
         if (lineNumber == null) {
-            lineNumber = new ByteVector();
+            lineNumber = new org.objectweb.asm.ByteVector();
         }
         ++lineNumberCount;
-        lineNumber.putShort(start.position);
-        lineNumber.putShort(line);
+        lineNumber.putShort(lnn.start.getLabel().position);
+        lineNumber.putShort(lnn.line);
     }
 
     @Override
     public void visitMaxs(final int maxStack, final int maxLocals) {
         if (resize) {
             // replaces the temporary jump opcodes introduced by Label.resolve.
-            if (ClassReader.RESIZE) {
+            if (org.objectweb.asm.ClassReader.RESIZE) {
                 resizeInstructions();
             } else {
                 throw new RuntimeException("Method code too large!");
             }
         }
-        if (ClassReader.FRAMES && compute == FRAMES) {
+        if (org.objectweb.asm.ClassReader.FRAMES && compute == FRAMES) {
             // completes the control flow graph with exception handler blocks
-            Handler handler = firstHandler;
+            org.objectweb.asm.Handler handler = firstHandler;
             while (handler != null) {
-                Label l = handler.start.getFirst();
-                Label h = handler.handler.getFirst();
-                Label e = handler.end.getFirst();
+                org.objectweb.asm.Label l = handler.start.getFirst();
+                org.objectweb.asm.Label h = handler.handler.getFirst();
+                org.objectweb.asm.Label e = handler.end.getFirst();
                 // computes the kind of the edges to 'h'
                 String t = handler.desc == null ? "java/lang/Throwable"
                         : handler.desc;
-                int kind = Frame.OBJECT | cw.addType(t);
+                int kind = org.objectweb.asm.Frame.OBJECT | cw.addType(t);
                 // h is an exception handler
-                h.status |= Label.TARGET;
+                h.status |= org.objectweb.asm.Label.TARGET;
                 // adds 'h' as a successor of labels between 'start' and 'end'
                 while (l != e) {
                     // creates an edge to 'h'
-                    Edge b = new Edge();
+                    org.objectweb.asm.Edge b = new org.objectweb.asm.Edge();
                     b.info = kind;
                     b.successor = h;
                     // adds it to the successors of 'l'
@@ -1438,8 +1423,8 @@ class MethodWriter extends MethodVisitor {
             }
 
             // creates and visits the first (implicit) frame
-            Frame f = labels.frame;
-            Type[] args = Type.getArgumentTypes(descriptor);
+            org.objectweb.asm.Frame f = labels.frame;
+            org.objectweb.asm.Type[] args = org.objectweb.asm.Type.getArgumentTypes(descriptor);
             f.initInputFrame(cw, access, args, this.maxLocals);
             visitFrame(f);
 
@@ -1450,28 +1435,28 @@ class MethodWriter extends MethodVisitor {
              * successors (which can be changed in the process).
              */
             int max = 0;
-            Label changed = labels;
+            org.objectweb.asm.Label changed = labels;
             while (changed != null) {
                 // removes a basic block from the list of changed basic blocks
-                Label l = changed;
+                org.objectweb.asm.Label l = changed;
                 changed = changed.next;
                 l.next = null;
                 f = l.frame;
                 // a reachable jump target must be stored in the stack map
-                if ((l.status & Label.TARGET) != 0) {
-                    l.status |= Label.STORE;
+                if ((l.status & org.objectweb.asm.Label.TARGET) != 0) {
+                    l.status |= org.objectweb.asm.Label.STORE;
                 }
                 // all visited labels are reachable, by definition
-                l.status |= Label.REACHABLE;
+                l.status |= org.objectweb.asm.Label.REACHABLE;
                 // updates the (absolute) maximum stack size
                 int blockMax = f.inputStack.length + l.outputStackMax;
                 if (blockMax > max) {
                     max = blockMax;
                 }
                 // updates the successors of the current basic block
-                Edge e = l.successors;
+                org.objectweb.asm.Edge e = l.successors;
                 while (e != null) {
-                    Label n = e.successor.getFirst();
+                    org.objectweb.asm.Label n = e.successor.getFirst();
                     boolean change = f.merge(cw, n.frame, e.info);
                     if (change && n.next == null) {
                         // if n has changed and is not already in the 'changed'
@@ -1484,15 +1469,15 @@ class MethodWriter extends MethodVisitor {
             }
 
             // visits all the frames that must be stored in the stack map
-            Label l = labels;
+            org.objectweb.asm.Label l = labels;
             while (l != null) {
                 f = l.frame;
-                if ((l.status & Label.STORE) != 0) {
+                if ((l.status & org.objectweb.asm.Label.STORE) != 0) {
                     visitFrame(f);
                 }
-                if ((l.status & Label.REACHABLE) == 0) {
+                if ((l.status & org.objectweb.asm.Label.REACHABLE) == 0) {
                     // finds start and end of dead basic block
-                    Label k = l.successor;
+                    org.objectweb.asm.Label k = l.successor;
                     int start = l.position;
                     int end = (k == null ? code.length : k.position) - 1;
                     // if non empty basic block
@@ -1500,17 +1485,17 @@ class MethodWriter extends MethodVisitor {
                         max = Math.max(max, 1);
                         // replaces instructions with NOP ... NOP ATHROW
                         for (int i = start; i < end; ++i) {
-                            code.data[i] = Opcodes.NOP;
+                            code.data[i] = org.objectweb.asm.Opcodes.NOP;
                         }
-                        code.data[end] = (byte) Opcodes.ATHROW;
+                        code.data[end] = (byte) org.objectweb.asm.Opcodes.ATHROW;
                         // emits a frame for this unreachable block
                         int frameIndex = startFrame(start, 0, 1);
-                        frame[frameIndex] = Frame.OBJECT
+                        frame[frameIndex] = org.objectweb.asm.Frame.OBJECT
                                 | cw.addType("java/lang/Throwable");
                         endFrame();
                         // removes the start-end range from the exception
                         // handlers
-                        firstHandler = Handler.remove(firstHandler, l, k);
+                        firstHandler = org.objectweb.asm.Handler.remove(firstHandler, l, k);
                     }
                 }
                 l = l.successor;
@@ -1526,19 +1511,19 @@ class MethodWriter extends MethodVisitor {
             this.maxStack = max;
         } else if (compute == MAXS) {
             // completes the control flow graph with exception handler blocks
-            Handler handler = firstHandler;
+            org.objectweb.asm.Handler handler = firstHandler;
             while (handler != null) {
-                Label l = handler.start;
-                Label h = handler.handler;
-                Label e = handler.end;
+                org.objectweb.asm.Label l = handler.start;
+                org.objectweb.asm.Label h = handler.handler;
+                org.objectweb.asm.Label e = handler.end;
                 // adds 'h' as a successor of labels between 'start' and 'end'
                 while (l != e) {
                     // creates an edge to 'h'
-                    Edge b = new Edge();
-                    b.info = Edge.EXCEPTION;
+                    org.objectweb.asm.Edge b = new org.objectweb.asm.Edge();
+                    b.info = org.objectweb.asm.Edge.EXCEPTION;
                     b.successor = h;
                     // adds it to the successors of 'l'
-                    if ((l.status & Label.JSR) == 0) {
+                    if ((l.status & org.objectweb.asm.Label.JSR) == 0) {
                         b.next = l.successors;
                         l.successors = b;
                     } else {
@@ -1564,13 +1549,13 @@ class MethodWriter extends MethodVisitor {
                 int id = 0;
                 labels.visitSubroutine(null, 1, subroutines);
                 // finds the basic blocks that belong to the real subroutines
-                Label l = labels;
+                org.objectweb.asm.Label l = labels;
                 while (l != null) {
-                    if ((l.status & Label.JSR) != 0) {
+                    if ((l.status & org.objectweb.asm.Label.JSR) != 0) {
                         // the subroutine is defined by l's TARGET, not by l
-                        Label subroutine = l.successors.next.successor;
+                        org.objectweb.asm.Label subroutine = l.successors.next.successor;
                         // if this subroutine has not been visited yet...
-                        if ((subroutine.status & Label.VISITED) == 0) {
+                        if ((subroutine.status & org.objectweb.asm.Label.VISITED) == 0) {
                             // ...assigns it a new id and finds its basic blocks
                             id += 1;
                             subroutine.visitSubroutine(null, (id / 32L) << 32
@@ -1582,14 +1567,14 @@ class MethodWriter extends MethodVisitor {
                 // second step: finds the successors of RET blocks
                 l = labels;
                 while (l != null) {
-                    if ((l.status & Label.JSR) != 0) {
-                        Label L = labels;
+                    if ((l.status & org.objectweb.asm.Label.JSR) != 0) {
+                        org.objectweb.asm.Label L = labels;
                         while (L != null) {
-                            L.status &= ~Label.VISITED2;
+                            L.status &= ~org.objectweb.asm.Label.VISITED2;
                             L = L.successor;
                         }
                         // the subroutine is defined by l's TARGET, not by l
-                        Label subroutine = l.successors.next.successor;
+                        org.objectweb.asm.Label subroutine = l.successors.next.successor;
                         subroutine.visitSubroutine(l, 0, subroutines);
                     }
                     l = l.successor;
@@ -1607,10 +1592,10 @@ class MethodWriter extends MethodVisitor {
              * stack sizes of these blocks.
              */
             int max = 0;
-            Label stack = labels;
+            org.objectweb.asm.Label stack = labels;
             while (stack != null) {
                 // pops a block from the stack
-                Label l = stack;
+                org.objectweb.asm.Label l = stack;
                 stack = stack.next;
                 // computes the true (non relative) max stack size of this block
                 int start = l.inputStackTop;
@@ -1620,20 +1605,20 @@ class MethodWriter extends MethodVisitor {
                     max = blockMax;
                 }
                 // analyzes the successors of the block
-                Edge b = l.successors;
-                if ((l.status & Label.JSR) != 0) {
+                org.objectweb.asm.Edge b = l.successors;
+                if ((l.status & org.objectweb.asm.Label.JSR) != 0) {
                     // ignores the first edge of JSR blocks (virtual successor)
                     b = b.next;
                 }
                 while (b != null) {
                     l = b.successor;
                     // if this successor has not already been pushed...
-                    if ((l.status & Label.PUSHED) == 0) {
+                    if ((l.status & org.objectweb.asm.Label.PUSHED) == 0) {
                         // computes its true beginning stack size...
-                        l.inputStackTop = b.info == Edge.EXCEPTION ? 1 : start
+                        l.inputStackTop = b.info == org.objectweb.asm.Edge.EXCEPTION ? 1 : start
                                 + b.info;
                         // ...and pushes it onto the stack
-                        l.status |= Label.PUSHED;
+                        l.status |= org.objectweb.asm.Label.PUSHED;
                         l.next = stack;
                         stack = l;
                     }
@@ -1657,15 +1642,15 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Adds a successor to the {@link #currentBlock currentBlock} block.
-     * 
+     *
      * @param info
      *            information about the control flow edge to be added.
      * @param successor
      *            the successor block to be added to the current block.
      */
-    private void addSuccessor(final int info, final Label successor) {
+    private void addSuccessor(final int info, final org.objectweb.asm.Label successor) {
         // creates and initializes an Edge object...
-        Edge b = new Edge();
+        org.objectweb.asm.Edge b = new org.objectweb.asm.Edge();
         b.info = info;
         b.successor = successor;
         // ...and adds it to the successor list of the currentBlock block
@@ -1679,8 +1664,8 @@ class MethodWriter extends MethodVisitor {
      */
     private void noSuccessor() {
         if (compute == FRAMES) {
-            Label l = new Label();
-            l.frame = new Frame();
+            org.objectweb.asm.Label l = new org.objectweb.asm.Label();
+            l.frame = new org.objectweb.asm.Frame();
             l.frame.owner = l;
             l.resolve(this, code.length, code.data);
             previousBlock.successor = l;
@@ -1697,11 +1682,11 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Visits a frame that has been computed from scratch.
-     * 
+     *
      * @param f
      *            the frame that must be visited.
      */
-    private void visitFrame(final Frame f) {
+    private void visitFrame(final org.objectweb.asm.Frame f) {
         int i, t;
         int nTop = 0;
         int nLocal = 0;
@@ -1712,13 +1697,13 @@ class MethodWriter extends MethodVisitor {
         // a LONG or a DOUBLE, and all trailing TOP types)
         for (i = 0; i < locals.length; ++i) {
             t = locals[i];
-            if (t == Frame.TOP) {
+            if (t == org.objectweb.asm.Frame.TOP) {
                 ++nTop;
             } else {
                 nLocal += nTop + 1;
                 nTop = 0;
             }
-            if (t == Frame.LONG || t == Frame.DOUBLE) {
+            if (t == org.objectweb.asm.Frame.LONG || t == org.objectweb.asm.Frame.DOUBLE) {
                 ++i;
             }
         }
@@ -1727,7 +1712,7 @@ class MethodWriter extends MethodVisitor {
         for (i = 0; i < stacks.length; ++i) {
             t = stacks[i];
             ++nStack;
-            if (t == Frame.LONG || t == Frame.DOUBLE) {
+            if (t == org.objectweb.asm.Frame.LONG || t == org.objectweb.asm.Frame.DOUBLE) {
                 ++i;
             }
         }
@@ -1736,14 +1721,14 @@ class MethodWriter extends MethodVisitor {
         for (i = 0; nLocal > 0; ++i, --nLocal) {
             t = locals[i];
             frame[frameIndex++] = t;
-            if (t == Frame.LONG || t == Frame.DOUBLE) {
+            if (t == org.objectweb.asm.Frame.LONG || t == org.objectweb.asm.Frame.DOUBLE) {
                 ++i;
             }
         }
         for (i = 0; i < stacks.length; ++i) {
             t = stacks[i];
             frame[frameIndex++] = t;
-            if (t == Frame.LONG || t == Frame.DOUBLE) {
+            if (t == org.objectweb.asm.Frame.LONG || t == org.objectweb.asm.Frame.DOUBLE) {
                 ++i;
             }
         }
@@ -1756,55 +1741,56 @@ class MethodWriter extends MethodVisitor {
     private void visitImplicitFirstFrame() {
         // There can be at most descriptor.length() + 1 locals
         int frameIndex = startFrame(0, descriptor.length() + 1, 0);
-        if ((access & Opcodes.ACC_STATIC) == 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_STATIC) == 0) {
             if ((access & ACC_CONSTRUCTOR) == 0) {
-                frame[frameIndex++] = Frame.OBJECT | cw.addType(cw.thisName);
+                frame[frameIndex++] = org.objectweb.asm.Frame.OBJECT | cw.addType(cw.thisName);
             } else {
                 frame[frameIndex++] = 6; // Opcodes.UNINITIALIZED_THIS;
             }
         }
         int i = 1;
-        loop: while (true) {
+        loop:
+        while (true) {
             int j = i;
             switch (descriptor.charAt(i++)) {
-            case 'Z':
-            case 'C':
-            case 'B':
-            case 'S':
-            case 'I':
-                frame[frameIndex++] = 1; // Opcodes.INTEGER;
-                break;
-            case 'F':
-                frame[frameIndex++] = 2; // Opcodes.FLOAT;
-                break;
-            case 'J':
-                frame[frameIndex++] = 4; // Opcodes.LONG;
-                break;
-            case 'D':
-                frame[frameIndex++] = 3; // Opcodes.DOUBLE;
-                break;
-            case '[':
-                while (descriptor.charAt(i) == '[') {
-                    ++i;
-                }
-                if (descriptor.charAt(i) == 'L') {
-                    ++i;
+                case 'Z':
+                case 'C':
+                case 'B':
+                case 'S':
+                case 'I':
+                    frame[frameIndex++] = 1; // Opcodes.INTEGER;
+                    break;
+                case 'F':
+                    frame[frameIndex++] = 2; // Opcodes.FLOAT;
+                    break;
+                case 'J':
+                    frame[frameIndex++] = 4; // Opcodes.LONG;
+                    break;
+                case 'D':
+                    frame[frameIndex++] = 3; // Opcodes.DOUBLE;
+                    break;
+                case '[':
+                    while (descriptor.charAt(i) == '[') {
+                        ++i;
+                    }
+                    if (descriptor.charAt(i) == 'L') {
+                        ++i;
+                        while (descriptor.charAt(i) != ';') {
+                            ++i;
+                        }
+                    }
+                    frame[frameIndex++] = org.objectweb.asm.Frame.OBJECT
+                            | cw.addType(descriptor.substring(j, ++i));
+                    break;
+                case 'L':
                     while (descriptor.charAt(i) != ';') {
                         ++i;
                     }
-                }
-                frame[frameIndex++] = Frame.OBJECT
-                        | cw.addType(descriptor.substring(j, ++i));
-                break;
-            case 'L':
-                while (descriptor.charAt(i) != ';') {
-                    ++i;
-                }
-                frame[frameIndex++] = Frame.OBJECT
-                        | cw.addType(descriptor.substring(j + 1, i++));
-                break;
-            default:
-                break loop;
+                    frame[frameIndex++] = org.objectweb.asm.Frame.OBJECT
+                            | cw.addType(descriptor.substring(j + 1, i++));
+                    break;
+                default:
+                    break loop;
             }
         }
         frame[1] = frameIndex - 3;
@@ -1813,7 +1799,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Starts the visit of a stack map frame.
-     * 
+     *
      * @param offset
      *            the offset of the instruction to which the frame corresponds.
      * @param nLocal
@@ -1840,7 +1826,7 @@ class MethodWriter extends MethodVisitor {
     private void endFrame() {
         if (previousFrame != null) { // do not write the first frame
             if (stackMap == null) {
-                stackMap = new ByteVector();
+                stackMap = new org.objectweb.asm.ByteVector();
             }
             writeFrame();
             ++frameCount;
@@ -1856,7 +1842,7 @@ class MethodWriter extends MethodVisitor {
     private void writeFrame() {
         int clocalsSize = frame[1];
         int cstackSize = frame[2];
-        if ((cw.version & 0xFFFF) < Opcodes.V1_6) {
+        if ((cw.version & 0xFFFF) < org.objectweb.asm.Opcodes.V1_6) {
             stackMap.putShort(frame[0]).putShort(clocalsSize);
             writeFrameTypes(3, 3 + clocalsSize);
             stackMap.putShort(cstackSize);
@@ -1875,20 +1861,20 @@ class MethodWriter extends MethodVisitor {
         if (cstackSize == 0) {
             k = clocalsSize - localsSize;
             switch (k) {
-            case -3:
-            case -2:
-            case -1:
-                type = CHOP_FRAME;
-                localsSize = clocalsSize;
-                break;
-            case 0:
-                type = delta < 64 ? SAME_FRAME : SAME_FRAME_EXTENDED;
-                break;
-            case 1:
-            case 2:
-            case 3:
-                type = APPEND_FRAME;
-                break;
+                case -3:
+                case -2:
+                case -1:
+                    type = CHOP_FRAME;
+                    localsSize = clocalsSize;
+                    break;
+                case 0:
+                    type = delta < 64 ? SAME_FRAME : SAME_FRAME_EXTENDED;
+                    break;
+                case 1:
+                case 2:
+                case 3:
+                    type = APPEND_FRAME;
+                    break;
             }
         } else if (clocalsSize == localsSize && cstackSize == 1) {
             type = delta < 63 ? SAME_LOCALS_1_STACK_ITEM_FRAME
@@ -1906,43 +1892,43 @@ class MethodWriter extends MethodVisitor {
             }
         }
         switch (type) {
-        case SAME_FRAME:
-            stackMap.putByte(delta);
-            break;
-        case SAME_LOCALS_1_STACK_ITEM_FRAME:
-            stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME + delta);
-            writeFrameTypes(3 + clocalsSize, 4 + clocalsSize);
-            break;
-        case SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED:
-            stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED).putShort(
-                    delta);
-            writeFrameTypes(3 + clocalsSize, 4 + clocalsSize);
-            break;
-        case SAME_FRAME_EXTENDED:
-            stackMap.putByte(SAME_FRAME_EXTENDED).putShort(delta);
-            break;
-        case CHOP_FRAME:
-            stackMap.putByte(SAME_FRAME_EXTENDED + k).putShort(delta);
-            break;
-        case APPEND_FRAME:
-            stackMap.putByte(SAME_FRAME_EXTENDED + k).putShort(delta);
-            writeFrameTypes(3 + localsSize, 3 + clocalsSize);
-            break;
-        // case FULL_FRAME:
-        default:
-            stackMap.putByte(FULL_FRAME).putShort(delta).putShort(clocalsSize);
-            writeFrameTypes(3, 3 + clocalsSize);
-            stackMap.putShort(cstackSize);
-            writeFrameTypes(3 + clocalsSize, 3 + clocalsSize + cstackSize);
+            case SAME_FRAME:
+                stackMap.putByte(delta);
+                break;
+            case SAME_LOCALS_1_STACK_ITEM_FRAME:
+                stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME + delta);
+                writeFrameTypes(3 + clocalsSize, 4 + clocalsSize);
+                break;
+            case SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED:
+                stackMap.putByte(SAME_LOCALS_1_STACK_ITEM_FRAME_EXTENDED).putShort(
+                        delta);
+                writeFrameTypes(3 + clocalsSize, 4 + clocalsSize);
+                break;
+            case SAME_FRAME_EXTENDED:
+                stackMap.putByte(SAME_FRAME_EXTENDED).putShort(delta);
+                break;
+            case CHOP_FRAME:
+                stackMap.putByte(SAME_FRAME_EXTENDED + k).putShort(delta);
+                break;
+            case APPEND_FRAME:
+                stackMap.putByte(SAME_FRAME_EXTENDED + k).putShort(delta);
+                writeFrameTypes(3 + localsSize, 3 + clocalsSize);
+                break;
+            // case FULL_FRAME:
+            default:
+                stackMap.putByte(FULL_FRAME).putShort(delta).putShort(clocalsSize);
+                writeFrameTypes(3, 3 + clocalsSize);
+                stackMap.putShort(cstackSize);
+                writeFrameTypes(3 + clocalsSize, 3 + clocalsSize + cstackSize);
         }
     }
 
     /**
      * Writes some types of the current frame {@link #frame} into the
      * StackMapTableAttribute. This method converts types from the format used
-     * in {@link Label} to the format used in StackMapTable attributes. In
+     * in {@link org.objectweb.asm.Label} to the format used in StackMapTable attributes. In
      * particular, it converts type table indexes to constant pool indexes.
-     * 
+     *
      * @param start
      *            index of the first type in {@link #frame} to write.
      * @param end
@@ -1951,58 +1937,58 @@ class MethodWriter extends MethodVisitor {
     private void writeFrameTypes(final int start, final int end) {
         for (int i = start; i < end; ++i) {
             int t = frame[i];
-            int d = t & Frame.DIM;
+            int d = t & org.objectweb.asm.Frame.DIM;
             if (d == 0) {
-                int v = t & Frame.BASE_VALUE;
-                switch (t & Frame.BASE_KIND) {
-                case Frame.OBJECT:
-                    stackMap.putByte(7).putShort(
-                            cw.newClass(cw.typeTable[v].strVal1));
-                    break;
-                case Frame.UNINITIALIZED:
-                    stackMap.putByte(8).putShort(cw.typeTable[v].intVal);
-                    break;
-                default:
-                    stackMap.putByte(v);
-                }
-            } else {
-                StringBuilder sb = new StringBuilder();
-                d >>= 28;
-                while (d-- > 0) {
-                    sb.append('[');
-                }
-                if ((t & Frame.BASE_KIND) == Frame.OBJECT) {
-                    sb.append('L');
-                    sb.append(cw.typeTable[t & Frame.BASE_VALUE].strVal1);
-                    sb.append(';');
-                } else {
-                    switch (t & 0xF) {
-                    case 1:
-                        sb.append('I');
+                int v = t & org.objectweb.asm.Frame.BASE_VALUE;
+                switch (t & org.objectweb.asm.Frame.BASE_KIND) {
+                    case org.objectweb.asm.Frame.OBJECT:
+                        stackMap.putByte(7).putShort(
+                                cw.newClass(cw.typeTable[v].strVal1));
                         break;
-                    case 2:
-                        sb.append('F');
-                        break;
-                    case 3:
-                        sb.append('D');
-                        break;
-                    case 9:
-                        sb.append('Z');
-                        break;
-                    case 10:
-                        sb.append('B');
-                        break;
-                    case 11:
-                        sb.append('C');
-                        break;
-                    case 12:
-                        sb.append('S');
+                    case org.objectweb.asm.Frame.UNINITIALIZED:
+                        stackMap.putByte(8).putShort(cw.typeTable[v].intVal);
                         break;
                     default:
-                        sb.append('J');
+                        stackMap.putByte(v);
+                }
+            } else {
+                StringBuffer buf = new StringBuffer();
+                d >>= 28;
+                while (d-- > 0) {
+                    buf.append('[');
+                }
+                if ((t & org.objectweb.asm.Frame.BASE_KIND) == org.objectweb.asm.Frame.OBJECT) {
+                    buf.append('L');
+                    buf.append(cw.typeTable[t & org.objectweb.asm.Frame.BASE_VALUE].strVal1);
+                    buf.append(';');
+                } else {
+                    switch (t & 0xF) {
+                        case 1:
+                            buf.append('I');
+                            break;
+                        case 2:
+                            buf.append('F');
+                            break;
+                        case 3:
+                            buf.append('D');
+                            break;
+                        case 9:
+                            buf.append('Z');
+                            break;
+                        case 10:
+                            buf.append('B');
+                            break;
+                        case 11:
+                            buf.append('C');
+                            break;
+                        case 12:
+                            buf.append('S');
+                            break;
+                        default:
+                            buf.append('J');
                     }
                 }
-                stackMap.putByte(7).putShort(cw.newClass(sb.toString()));
+                stackMap.putByte(7).putShort(cw.newClass(buf.toString()));
             }
         }
     }
@@ -2013,7 +1999,7 @@ class MethodWriter extends MethodVisitor {
         } else if (type instanceof Integer) {
             stackMap.putByte(((Integer) type).intValue());
         } else {
-            stackMap.putByte(8).putShort(((Label) type).position);
+            stackMap.putByte(8).putShort(((org.objectweb.asm.Label) type).position);
         }
     }
 
@@ -2023,7 +2009,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Returns the size of the bytecode of this method.
-     * 
+     *
      * @return the size of the bytecode of this method.
      */
     final int getSize() {
@@ -2032,7 +2018,7 @@ class MethodWriter extends MethodVisitor {
         }
         int size = 8;
         if (code.length > 0) {
-            if (code.length > 65535) {
+            if (code.length > 65536) {
                 throw new RuntimeException("Method code too large!");
             }
             cw.newUTF8("Code");
@@ -2050,15 +2036,15 @@ class MethodWriter extends MethodVisitor {
                 size += 8 + lineNumber.length;
             }
             if (stackMap != null) {
-                boolean zip = (cw.version & 0xFFFF) >= Opcodes.V1_6;
+                boolean zip = (cw.version & 0xFFFF) >= org.objectweb.asm.Opcodes.V1_6;
                 cw.newUTF8(zip ? "StackMapTable" : "StackMap");
                 size += 8 + stackMap.length;
             }
-            if (ClassReader.ANNOTATIONS && ctanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ctanns != null) {
                 cw.newUTF8("RuntimeVisibleTypeAnnotations");
                 size += 8 + ctanns.getSize();
             }
-            if (ClassReader.ANNOTATIONS && ictanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ictanns != null) {
                 cw.newUTF8("RuntimeInvisibleTypeAnnotations");
                 size += 8 + ictanns.getSize();
             }
@@ -2071,18 +2057,18 @@ class MethodWriter extends MethodVisitor {
             cw.newUTF8("Exceptions");
             size += 8 + 2 * exceptionCount;
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-            if ((cw.version & 0xFFFF) < Opcodes.V1_5
-                    || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((cw.version & 0xFFFF) < org.objectweb.asm.Opcodes.V1_5
+                    || (access & org.objectweb.asm.ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
                 cw.newUTF8("Synthetic");
                 size += 6;
             }
         }
-        if ((access & Opcodes.ACC_DEPRECATED) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_DEPRECATED) != 0) {
             cw.newUTF8("Deprecated");
             size += 6;
         }
-        if (ClassReader.SIGNATURES && signature != null) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES && signature != null) {
             cw.newUTF8("Signature");
             cw.newUTF8(signature);
             size += 8;
@@ -2091,34 +2077,34 @@ class MethodWriter extends MethodVisitor {
             cw.newUTF8("MethodParameters");
             size += 7 + methodParameters.length;
         }
-        if (ClassReader.ANNOTATIONS && annd != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && annd != null) {
             cw.newUTF8("AnnotationDefault");
             size += 6 + annd.length;
         }
-        if (ClassReader.ANNOTATIONS && anns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && anns != null) {
             cw.newUTF8("RuntimeVisibleAnnotations");
             size += 8 + anns.getSize();
         }
-        if (ClassReader.ANNOTATIONS && ianns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ianns != null) {
             cw.newUTF8("RuntimeInvisibleAnnotations");
             size += 8 + ianns.getSize();
         }
-        if (ClassReader.ANNOTATIONS && tanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && tanns != null) {
             cw.newUTF8("RuntimeVisibleTypeAnnotations");
             size += 8 + tanns.getSize();
         }
-        if (ClassReader.ANNOTATIONS && itanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && itanns != null) {
             cw.newUTF8("RuntimeInvisibleTypeAnnotations");
             size += 8 + itanns.getSize();
         }
-        if (ClassReader.ANNOTATIONS && panns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && panns != null) {
             cw.newUTF8("RuntimeVisibleParameterAnnotations");
             size += 7 + 2 * (panns.length - synthetics);
             for (int i = panns.length - 1; i >= synthetics; --i) {
                 size += panns[i] == null ? 0 : panns[i].getSize();
             }
         }
-        if (ClassReader.ANNOTATIONS && ipanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ipanns != null) {
             cw.newUTF8("RuntimeInvisibleParameterAnnotations");
             size += 7 + 2 * (ipanns.length - synthetics);
             for (int i = ipanns.length - 1; i >= synthetics; --i) {
@@ -2133,16 +2119,16 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Puts the bytecode of this method in the given byte vector.
-     * 
+     *
      * @param out
      *            the byte vector into which the bytecode of this method must be
      *            copied.
      */
-    final void put(final ByteVector out) {
-        final int FACTOR = ClassWriter.TO_ACC_SYNTHETIC;
-        int mask = ACC_CONSTRUCTOR | Opcodes.ACC_DEPRECATED
-                | ClassWriter.ACC_SYNTHETIC_ATTRIBUTE
-                | ((access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) / FACTOR);
+    final void put(final org.objectweb.asm.ByteVector out) {
+        final int FACTOR = org.objectweb.asm.ClassWriter.TO_ACC_SYNTHETIC;
+        int mask = ACC_CONSTRUCTOR | org.objectweb.asm.Opcodes.ACC_DEPRECATED
+                | org.objectweb.asm.ClassWriter.ACC_SYNTHETIC_ATTRIBUTE
+                | ((access & org.objectweb.asm.ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) / FACTOR);
         out.putShort(access & ~mask).putShort(name).putShort(desc);
         if (classReaderOffset != 0) {
             out.putByteArray(cw.cr.b, classReaderOffset, classReaderLength);
@@ -2155,40 +2141,40 @@ class MethodWriter extends MethodVisitor {
         if (exceptionCount > 0) {
             ++attributeCount;
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-            if ((cw.version & 0xFFFF) < Opcodes.V1_5
-                    || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((cw.version & 0xFFFF) < org.objectweb.asm.Opcodes.V1_5
+                    || (access & org.objectweb.asm.ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
                 ++attributeCount;
             }
         }
-        if ((access & Opcodes.ACC_DEPRECATED) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_DEPRECATED) != 0) {
             ++attributeCount;
         }
-        if (ClassReader.SIGNATURES && signature != null) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES && signature != null) {
             ++attributeCount;
         }
         if (methodParameters != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && annd != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && annd != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && anns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && anns != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && ianns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ianns != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && tanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && tanns != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && itanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && itanns != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && panns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && panns != null) {
             ++attributeCount;
         }
-        if (ClassReader.ANNOTATIONS && ipanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ipanns != null) {
             ++attributeCount;
         }
         if (attrs != null) {
@@ -2209,10 +2195,10 @@ class MethodWriter extends MethodVisitor {
             if (stackMap != null) {
                 size += 8 + stackMap.length;
             }
-            if (ClassReader.ANNOTATIONS && ctanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ctanns != null) {
                 size += 8 + ctanns.getSize();
             }
-            if (ClassReader.ANNOTATIONS && ictanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ictanns != null) {
                 size += 8 + ictanns.getSize();
             }
             if (cattrs != null) {
@@ -2224,7 +2210,7 @@ class MethodWriter extends MethodVisitor {
             out.putInt(code.length).putByteArray(code.data, 0, code.length);
             out.putShort(handlerCount);
             if (handlerCount > 0) {
-                Handler h = firstHandler;
+                org.objectweb.asm.Handler h = firstHandler;
                 while (h != null) {
                     out.putShort(h.start.position).putShort(h.end.position)
                             .putShort(h.handler.position).putShort(h.type);
@@ -2244,10 +2230,10 @@ class MethodWriter extends MethodVisitor {
             if (stackMap != null) {
                 ++attributeCount;
             }
-            if (ClassReader.ANNOTATIONS && ctanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ctanns != null) {
                 ++attributeCount;
             }
-            if (ClassReader.ANNOTATIONS && ictanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ictanns != null) {
                 ++attributeCount;
             }
             if (cattrs != null) {
@@ -2270,16 +2256,16 @@ class MethodWriter extends MethodVisitor {
                 out.putByteArray(lineNumber.data, 0, lineNumber.length);
             }
             if (stackMap != null) {
-                boolean zip = (cw.version & 0xFFFF) >= Opcodes.V1_6;
+                boolean zip = (cw.version & 0xFFFF) >= org.objectweb.asm.Opcodes.V1_6;
                 out.putShort(cw.newUTF8(zip ? "StackMapTable" : "StackMap"));
                 out.putInt(stackMap.length + 2).putShort(frameCount);
                 out.putByteArray(stackMap.data, 0, stackMap.length);
             }
-            if (ClassReader.ANNOTATIONS && ctanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ctanns != null) {
                 out.putShort(cw.newUTF8("RuntimeVisibleTypeAnnotations"));
                 ctanns.put(out);
             }
-            if (ClassReader.ANNOTATIONS && ictanns != null) {
+            if (org.objectweb.asm.ClassReader.ANNOTATIONS && ictanns != null) {
                 out.putShort(cw.newUTF8("RuntimeInvisibleTypeAnnotations"));
                 ictanns.put(out);
             }
@@ -2295,16 +2281,16 @@ class MethodWriter extends MethodVisitor {
                 out.putShort(exceptions[i]);
             }
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-            if ((cw.version & 0xFFFF) < Opcodes.V1_5
-                    || (access & ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((cw.version & 0xFFFF) < org.objectweb.asm.Opcodes.V1_5
+                    || (access & org.objectweb.asm.ClassWriter.ACC_SYNTHETIC_ATTRIBUTE) != 0) {
                 out.putShort(cw.newUTF8("Synthetic")).putInt(0);
             }
         }
-        if ((access & Opcodes.ACC_DEPRECATED) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_DEPRECATED) != 0) {
             out.putShort(cw.newUTF8("Deprecated")).putInt(0);
         }
-        if (ClassReader.SIGNATURES && signature != null) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES && signature != null) {
             out.putShort(cw.newUTF8("Signature")).putInt(2)
                     .putShort(cw.newUTF8(signature));
         }
@@ -2314,28 +2300,28 @@ class MethodWriter extends MethodVisitor {
                     methodParametersCount);
             out.putByteArray(methodParameters.data, 0, methodParameters.length);
         }
-        if (ClassReader.ANNOTATIONS && annd != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && annd != null) {
             out.putShort(cw.newUTF8("AnnotationDefault"));
             out.putInt(annd.length);
             out.putByteArray(annd.data, 0, annd.length);
         }
-        if (ClassReader.ANNOTATIONS && anns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && anns != null) {
             out.putShort(cw.newUTF8("RuntimeVisibleAnnotations"));
             anns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && ianns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ianns != null) {
             out.putShort(cw.newUTF8("RuntimeInvisibleAnnotations"));
             ianns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && tanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && tanns != null) {
             out.putShort(cw.newUTF8("RuntimeVisibleTypeAnnotations"));
             tanns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && itanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && itanns != null) {
             out.putShort(cw.newUTF8("RuntimeInvisibleTypeAnnotations"));
             itanns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && panns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && panns != null) {
             out.putShort(cw.newUTF8("RuntimeVisibleParameterAnnotations"));
             AnnotationWriter.put(panns, synthetics, out);
         }
@@ -2354,7 +2340,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Resizes and replaces the temporary instructions inserted by
-     * {@link Label#resolve} for wide forward jumps, while keeping jump offsets
+     * {@link org.objectweb.asm.Label#resolve} for wide forward jumps, while keeping jump offsets
      * and instruction addresses consistent. This may require to resize other
      * existing instructions, or even to introduce new instructions: for
      * example, increasing the size of an instruction by 2 at the middle of a
@@ -2365,7 +2351,7 @@ class MethodWriter extends MethodVisitor {
      * by this method.
      * <p>
      * <i>This method must be called after all the method that is being built
-     * has been visited</i>. In particular, the {@link Label Label} objects used
+     * has been visited</i>. In particular, the {@link org.objectweb.asm.Label Label} objects used
      * to construct the method are no longer valid after this method has been
      * called.
      */
@@ -2416,111 +2402,111 @@ class MethodWriter extends MethodVisitor {
                 int opcode = b[u] & 0xFF; // opcode of current instruction
                 int insert = 0; // bytes to be added after this instruction
 
-                switch (ClassWriter.TYPE[opcode]) {
-                case ClassWriter.NOARG_INSN:
-                case ClassWriter.IMPLVAR_INSN:
-                    u += 1;
-                    break;
-                case ClassWriter.LABEL_INSN:
-                    if (opcode > 201) {
-                        // converts temporary opcodes 202 to 217, 218 and
-                        // 219 to IFEQ ... JSR (inclusive), IFNULL and
-                        // IFNONNULL
-                        opcode = opcode < 218 ? opcode - 49 : opcode - 20;
-                        label = u + readUnsignedShort(b, u + 1);
-                    } else {
-                        label = u + readShort(b, u + 1);
-                    }
-                    newOffset = getNewOffset(allIndexes, allSizes, u, label);
-                    if (newOffset < Short.MIN_VALUE
-                            || newOffset > Short.MAX_VALUE) {
-                        if (!resize[u]) {
-                            if (opcode == Opcodes.GOTO || opcode == Opcodes.JSR) {
-                                // two additional bytes will be required to
-                                // replace this GOTO or JSR instruction with
-                                // a GOTO_W or a JSR_W
-                                insert = 2;
-                            } else {
-                                // five additional bytes will be required to
-                                // replace this IFxxx <l> instruction with
-                                // IFNOTxxx <l'> GOTO_W <l>, where IFNOTxxx
-                                // is the "opposite" opcode of IFxxx (i.e.,
-                                // IFNE for IFEQ) and where <l'> designates
-                                // the instruction just after the GOTO_W.
-                                insert = 5;
+                switch (org.objectweb.asm.ClassWriter.TYPE[opcode]) {
+                    case org.objectweb.asm.ClassWriter.NOARG_INSN:
+                    case org.objectweb.asm.ClassWriter.IMPLVAR_INSN:
+                        u += 1;
+                        break;
+                    case org.objectweb.asm.ClassWriter.LABEL_INSN:
+                        if (opcode > 201) {
+                            // converts temporary opcodes 202 to 217, 218 and
+                            // 219 to IFEQ ... JSR (inclusive), IFNULL and
+                            // IFNONNULL
+                            opcode = opcode < 218 ? opcode - 49 : opcode - 20;
+                            label = u + readUnsignedShort(b, u + 1);
+                        } else {
+                            label = u + readShort(b, u + 1);
+                        }
+                        newOffset = getNewOffset(allIndexes, allSizes, u, label);
+                        if (newOffset < Short.MIN_VALUE
+                                || newOffset > Short.MAX_VALUE) {
+                            if (!resize[u]) {
+                                if (opcode == org.objectweb.asm.Opcodes.GOTO || opcode == org.objectweb.asm.Opcodes.JSR) {
+                                    // two additional bytes will be required to
+                                    // replace this GOTO or JSR instruction with
+                                    // a GOTO_W or a JSR_W
+                                    insert = 2;
+                                } else {
+                                    // five additional bytes will be required to
+                                    // replace this IFxxx <l> instruction with
+                                    // IFNOTxxx <l'> GOTO_W <l>, where IFNOTxxx
+                                    // is the "opposite" opcode of IFxxx (i.e.,
+                                    // IFNE for IFEQ) and where <l'> designates
+                                    // the instruction just after the GOTO_W.
+                                    insert = 5;
+                                }
+                                resize[u] = true;
                             }
+                        }
+                        u += 3;
+                        break;
+                    case org.objectweb.asm.ClassWriter.LABELW_INSN:
+                        u += 5;
+                        break;
+                    case org.objectweb.asm.ClassWriter.TABL_INSN:
+                        if (state == 1) {
+                            // true number of bytes to be added (or removed)
+                            // from this instruction = (future number of padding
+                            // bytes - current number of padding byte) -
+                            // previously over estimated variation =
+                            // = ((3 - newOffset%4) - (3 - u%4)) - u%4
+                            // = (-newOffset%4 + u%4) - u%4
+                            // = -(newOffset & 3)
+                            newOffset = getNewOffset(allIndexes, allSizes, 0, u);
+                            insert = -(newOffset & 3);
+                        } else if (!resize[u]) {
+                            // over estimation of the number of bytes to be
+                            // added to this instruction = 3 - current number
+                            // of padding bytes = 3 - (3 - u%4) = u%4 = u & 3
+                            insert = u & 3;
                             resize[u] = true;
                         }
-                    }
-                    u += 3;
-                    break;
-                case ClassWriter.LABELW_INSN:
-                    u += 5;
-                    break;
-                case ClassWriter.TABL_INSN:
-                    if (state == 1) {
-                        // true number of bytes to be added (or removed)
-                        // from this instruction = (future number of padding
-                        // bytes - current number of padding byte) -
-                        // previously over estimated variation =
-                        // = ((3 - newOffset%4) - (3 - u%4)) - u%4
-                        // = (-newOffset%4 + u%4) - u%4
-                        // = -(newOffset & 3)
-                        newOffset = getNewOffset(allIndexes, allSizes, 0, u);
-                        insert = -(newOffset & 3);
-                    } else if (!resize[u]) {
-                        // over estimation of the number of bytes to be
-                        // added to this instruction = 3 - current number
-                        // of padding bytes = 3 - (3 - u%4) = u%4 = u & 3
-                        insert = u & 3;
-                        resize[u] = true;
-                    }
-                    // skips instruction
-                    u = u + 4 - (u & 3);
-                    u += 4 * (readInt(b, u + 8) - readInt(b, u + 4) + 1) + 12;
-                    break;
-                case ClassWriter.LOOK_INSN:
-                    if (state == 1) {
-                        // like TABL_INSN
-                        newOffset = getNewOffset(allIndexes, allSizes, 0, u);
-                        insert = -(newOffset & 3);
-                    } else if (!resize[u]) {
-                        // like TABL_INSN
-                        insert = u & 3;
-                        resize[u] = true;
-                    }
-                    // skips instruction
-                    u = u + 4 - (u & 3);
-                    u += 8 * readInt(b, u + 4) + 8;
-                    break;
-                case ClassWriter.WIDE_INSN:
-                    opcode = b[u + 1] & 0xFF;
-                    if (opcode == Opcodes.IINC) {
-                        u += 6;
-                    } else {
+                        // skips instruction
+                        u = u + 4 - (u & 3);
+                        u += 4 * (readInt(b, u + 8) - readInt(b, u + 4) + 1) + 12;
+                        break;
+                    case org.objectweb.asm.ClassWriter.LOOK_INSN:
+                        if (state == 1) {
+                            // like TABL_INSN
+                            newOffset = getNewOffset(allIndexes, allSizes, 0, u);
+                            insert = -(newOffset & 3);
+                        } else if (!resize[u]) {
+                            // like TABL_INSN
+                            insert = u & 3;
+                            resize[u] = true;
+                        }
+                        // skips instruction
+                        u = u + 4 - (u & 3);
+                        u += 8 * readInt(b, u + 4) + 8;
+                        break;
+                    case org.objectweb.asm.ClassWriter.WIDE_INSN:
+                        opcode = b[u + 1] & 0xFF;
+                        if (opcode == org.objectweb.asm.Opcodes.IINC) {
+                            u += 6;
+                        } else {
+                            u += 4;
+                        }
+                        break;
+                    case org.objectweb.asm.ClassWriter.VAR_INSN:
+                    case org.objectweb.asm.ClassWriter.SBYTE_INSN:
+                    case org.objectweb.asm.ClassWriter.LDC_INSN:
+                        u += 2;
+                        break;
+                    case org.objectweb.asm.ClassWriter.SHORT_INSN:
+                    case org.objectweb.asm.ClassWriter.LDCW_INSN:
+                    case org.objectweb.asm.ClassWriter.FIELDORMETH_INSN:
+                    case org.objectweb.asm.ClassWriter.TYPE_INSN:
+                    case org.objectweb.asm.ClassWriter.IINC_INSN:
+                        u += 3;
+                        break;
+                    case org.objectweb.asm.ClassWriter.ITFMETH_INSN:
+                    case org.objectweb.asm.ClassWriter.INDYMETH_INSN:
+                        u += 5;
+                        break;
+                    // case ClassWriter.MANA_INSN:
+                    default:
                         u += 4;
-                    }
-                    break;
-                case ClassWriter.VAR_INSN:
-                case ClassWriter.SBYTE_INSN:
-                case ClassWriter.LDC_INSN:
-                    u += 2;
-                    break;
-                case ClassWriter.SHORT_INSN:
-                case ClassWriter.LDCW_INSN:
-                case ClassWriter.FIELDORMETH_INSN:
-                case ClassWriter.TYPE_INSN:
-                case ClassWriter.IINC_INSN:
-                    u += 3;
-                    break;
-                case ClassWriter.ITFMETH_INSN:
-                case ClassWriter.INDYMETH_INSN:
-                    u += 5;
-                    break;
-                // case ClassWriter.MANA_INSN:
-                default:
-                    u += 4;
-                    break;
+                        break;
                 }
                 if (insert != 0) {
                     // adds a new (u, insert) entry in the allIndexes and
@@ -2548,147 +2534,147 @@ class MethodWriter extends MethodVisitor {
         // copies the bytecode of the method into a new bytevector, updates the
         // offsets, and inserts (or removes) bytes as requested.
 
-        ByteVector newCode = new ByteVector(code.length);
+        org.objectweb.asm.ByteVector newCode = new org.objectweb.asm.ByteVector(code.length);
 
         u = 0;
         while (u < code.length) {
             int opcode = b[u] & 0xFF;
-            switch (ClassWriter.TYPE[opcode]) {
-            case ClassWriter.NOARG_INSN:
-            case ClassWriter.IMPLVAR_INSN:
-                newCode.putByte(opcode);
-                u += 1;
-                break;
-            case ClassWriter.LABEL_INSN:
-                if (opcode > 201) {
-                    // changes temporary opcodes 202 to 217 (inclusive), 218
-                    // and 219 to IFEQ ... JSR (inclusive), IFNULL and
-                    // IFNONNULL
-                    opcode = opcode < 218 ? opcode - 49 : opcode - 20;
-                    label = u + readUnsignedShort(b, u + 1);
-                } else {
-                    label = u + readShort(b, u + 1);
-                }
-                newOffset = getNewOffset(allIndexes, allSizes, u, label);
-                if (resize[u]) {
-                    // replaces GOTO with GOTO_W, JSR with JSR_W and IFxxx
-                    // <l> with IFNOTxxx <l'> GOTO_W <l>, where IFNOTxxx is
-                    // the "opposite" opcode of IFxxx (i.e., IFNE for IFEQ)
-                    // and where <l'> designates the instruction just after
-                    // the GOTO_W.
-                    if (opcode == Opcodes.GOTO) {
-                        newCode.putByte(200); // GOTO_W
-                    } else if (opcode == Opcodes.JSR) {
-                        newCode.putByte(201); // JSR_W
-                    } else {
-                        newCode.putByte(opcode <= 166 ? ((opcode + 1) ^ 1) - 1
-                                : opcode ^ 1);
-                        newCode.putShort(8); // jump offset
-                        newCode.putByte(200); // GOTO_W
-                        // newOffset now computed from start of GOTO_W
-                        newOffset -= 3;
-                    }
-                    newCode.putInt(newOffset);
-                } else {
+            switch (org.objectweb.asm.ClassWriter.TYPE[opcode]) {
+                case org.objectweb.asm.ClassWriter.NOARG_INSN:
+                case org.objectweb.asm.ClassWriter.IMPLVAR_INSN:
                     newCode.putByte(opcode);
-                    newCode.putShort(newOffset);
-                }
-                u += 3;
-                break;
-            case ClassWriter.LABELW_INSN:
-                label = u + readInt(b, u + 1);
-                newOffset = getNewOffset(allIndexes, allSizes, u, label);
-                newCode.putByte(opcode);
-                newCode.putInt(newOffset);
-                u += 5;
-                break;
-            case ClassWriter.TABL_INSN:
-                // skips 0 to 3 padding bytes
-                v = u;
-                u = u + 4 - (v & 3);
-                // reads and copies instruction
-                newCode.putByte(Opcodes.TABLESWITCH);
-                newCode.putByteArray(null, 0, (4 - newCode.length % 4) % 4);
-                label = v + readInt(b, u);
-                u += 4;
-                newOffset = getNewOffset(allIndexes, allSizes, v, label);
-                newCode.putInt(newOffset);
-                j = readInt(b, u);
-                u += 4;
-                newCode.putInt(j);
-                j = readInt(b, u) - j + 1;
-                u += 4;
-                newCode.putInt(readInt(b, u - 4));
-                for (; j > 0; --j) {
+                    u += 1;
+                    break;
+                case org.objectweb.asm.ClassWriter.LABEL_INSN:
+                    if (opcode > 201) {
+                        // changes temporary opcodes 202 to 217 (inclusive), 218
+                        // and 219 to IFEQ ... JSR (inclusive), IFNULL and
+                        // IFNONNULL
+                        opcode = opcode < 218 ? opcode - 49 : opcode - 20;
+                        label = u + readUnsignedShort(b, u + 1);
+                    } else {
+                        label = u + readShort(b, u + 1);
+                    }
+                    newOffset = getNewOffset(allIndexes, allSizes, u, label);
+                    if (resize[u]) {
+                        // replaces GOTO with GOTO_W, JSR with JSR_W and IFxxx
+                        // <l> with IFNOTxxx <l'> GOTO_W <l>, where IFNOTxxx is
+                        // the "opposite" opcode of IFxxx (i.e., IFNE for IFEQ)
+                        // and where <l'> designates the instruction just after
+                        // the GOTO_W.
+                        if (opcode == org.objectweb.asm.Opcodes.GOTO) {
+                            newCode.putByte(200); // GOTO_W
+                        } else if (opcode == org.objectweb.asm.Opcodes.JSR) {
+                            newCode.putByte(201); // JSR_W
+                        } else {
+                            newCode.putByte(opcode <= 166 ? ((opcode + 1) ^ 1) - 1
+                                    : opcode ^ 1);
+                            newCode.putShort(8); // jump offset
+                            newCode.putByte(200); // GOTO_W
+                            // newOffset now computed from start of GOTO_W
+                            newOffset -= 3;
+                        }
+                        newCode.putInt(newOffset);
+                    } else {
+                        newCode.putByte(opcode);
+                        newCode.putShort(newOffset);
+                    }
+                    u += 3;
+                    break;
+                case org.objectweb.asm.ClassWriter.LABELW_INSN:
+                    label = u + readInt(b, u + 1);
+                    newOffset = getNewOffset(allIndexes, allSizes, u, label);
+                    newCode.putByte(opcode);
+                    newCode.putInt(newOffset);
+                    u += 5;
+                    break;
+                case org.objectweb.asm.ClassWriter.TABL_INSN:
+                    // skips 0 to 3 padding bytes
+                    v = u;
+                    u = u + 4 - (v & 3);
+                    // reads and copies instruction
+                    newCode.putByte(org.objectweb.asm.Opcodes.TABLESWITCH);
+                    newCode.putByteArray(null, 0, (4 - newCode.length % 4) % 4);
                     label = v + readInt(b, u);
                     u += 4;
                     newOffset = getNewOffset(allIndexes, allSizes, v, label);
                     newCode.putInt(newOffset);
-                }
-                break;
-            case ClassWriter.LOOK_INSN:
-                // skips 0 to 3 padding bytes
-                v = u;
-                u = u + 4 - (v & 3);
-                // reads and copies instruction
-                newCode.putByte(Opcodes.LOOKUPSWITCH);
-                newCode.putByteArray(null, 0, (4 - newCode.length % 4) % 4);
-                label = v + readInt(b, u);
-                u += 4;
-                newOffset = getNewOffset(allIndexes, allSizes, v, label);
-                newCode.putInt(newOffset);
-                j = readInt(b, u);
-                u += 4;
-                newCode.putInt(j);
-                for (; j > 0; --j) {
-                    newCode.putInt(readInt(b, u));
+                    j = readInt(b, u);
                     u += 4;
+                    newCode.putInt(j);
+                    j = readInt(b, u) - j + 1;
+                    u += 4;
+                    newCode.putInt(readInt(b, u - 4));
+                    for (; j > 0; --j) {
+                        label = v + readInt(b, u);
+                        u += 4;
+                        newOffset = getNewOffset(allIndexes, allSizes, v, label);
+                        newCode.putInt(newOffset);
+                    }
+                    break;
+                case org.objectweb.asm.ClassWriter.LOOK_INSN:
+                    // skips 0 to 3 padding bytes
+                    v = u;
+                    u = u + 4 - (v & 3);
+                    // reads and copies instruction
+                    newCode.putByte(org.objectweb.asm.Opcodes.LOOKUPSWITCH);
+                    newCode.putByteArray(null, 0, (4 - newCode.length % 4) % 4);
                     label = v + readInt(b, u);
                     u += 4;
                     newOffset = getNewOffset(allIndexes, allSizes, v, label);
                     newCode.putInt(newOffset);
-                }
-                break;
-            case ClassWriter.WIDE_INSN:
-                opcode = b[u + 1] & 0xFF;
-                if (opcode == Opcodes.IINC) {
-                    newCode.putByteArray(b, u, 6);
-                    u += 6;
-                } else {
+                    j = readInt(b, u);
+                    u += 4;
+                    newCode.putInt(j);
+                    for (; j > 0; --j) {
+                        newCode.putInt(readInt(b, u));
+                        u += 4;
+                        label = v + readInt(b, u);
+                        u += 4;
+                        newOffset = getNewOffset(allIndexes, allSizes, v, label);
+                        newCode.putInt(newOffset);
+                    }
+                    break;
+                case org.objectweb.asm.ClassWriter.WIDE_INSN:
+                    opcode = b[u + 1] & 0xFF;
+                    if (opcode == Opcodes.IINC) {
+                        newCode.putByteArray(b, u, 6);
+                        u += 6;
+                    } else {
+                        newCode.putByteArray(b, u, 4);
+                        u += 4;
+                    }
+                    break;
+                case org.objectweb.asm.ClassWriter.VAR_INSN:
+                case org.objectweb.asm.ClassWriter.SBYTE_INSN:
+                case org.objectweb.asm.ClassWriter.LDC_INSN:
+                    newCode.putByteArray(b, u, 2);
+                    u += 2;
+                    break;
+                case org.objectweb.asm.ClassWriter.SHORT_INSN:
+                case org.objectweb.asm.ClassWriter.LDCW_INSN:
+                case org.objectweb.asm.ClassWriter.FIELDORMETH_INSN:
+                case org.objectweb.asm.ClassWriter.TYPE_INSN:
+                case org.objectweb.asm.ClassWriter.IINC_INSN:
+                    newCode.putByteArray(b, u, 3);
+                    u += 3;
+                    break;
+                case org.objectweb.asm.ClassWriter.ITFMETH_INSN:
+                case org.objectweb.asm.ClassWriter.INDYMETH_INSN:
+                    newCode.putByteArray(b, u, 5);
+                    u += 5;
+                    break;
+                // case MANA_INSN:
+                default:
                     newCode.putByteArray(b, u, 4);
                     u += 4;
-                }
-                break;
-            case ClassWriter.VAR_INSN:
-            case ClassWriter.SBYTE_INSN:
-            case ClassWriter.LDC_INSN:
-                newCode.putByteArray(b, u, 2);
-                u += 2;
-                break;
-            case ClassWriter.SHORT_INSN:
-            case ClassWriter.LDCW_INSN:
-            case ClassWriter.FIELDORMETH_INSN:
-            case ClassWriter.TYPE_INSN:
-            case ClassWriter.IINC_INSN:
-                newCode.putByteArray(b, u, 3);
-                u += 3;
-                break;
-            case ClassWriter.ITFMETH_INSN:
-            case ClassWriter.INDYMETH_INSN:
-                newCode.putByteArray(b, u, 5);
-                u += 5;
-                break;
-            // case MANA_INSN:
-            default:
-                newCode.putByteArray(b, u, 4);
-                u += 4;
-                break;
+                    break;
             }
         }
 
         // updates the stack map frame labels
         if (compute == FRAMES) {
-            Label l = labels;
+            org.objectweb.asm.Label l = labels;
             while (l != null) {
                 /*
                  * Detects the labels that are just after an IF instruction that
@@ -2700,19 +2686,17 @@ class MethodWriter extends MethodVisitor {
                  */
                 u = l.position - 3;
                 if (u >= 0 && resize[u]) {
-                    l.status |= Label.TARGET;
+                    l.status |= org.objectweb.asm.Label.TARGET;
                 }
                 getNewOffset(allIndexes, allSizes, l);
                 l = l.successor;
             }
             // Update the offsets in the uninitialized types
-            if (cw.typeTable != null) {
-                for (i = 0; i < cw.typeTable.length; ++i) {
-                    Item item = cw.typeTable[i];
-                    if (item != null && item.type == ClassWriter.TYPE_UNINIT) {
-                        item.intVal = getNewOffset(allIndexes, allSizes, 0,
-                                item.intVal);
-                    }
+            for (i = 0; i < cw.typeTable.length; ++i) {
+                org.objectweb.asm.Item item = cw.typeTable[i];
+                if (item != null && item.type == ClassWriter.TYPE_UNINIT) {
+                    item.intVal = getNewOffset(allIndexes, allSizes, 0,
+                            item.intVal);
                 }
             }
             // The stack map frames are not serialized yet, so we don't need
@@ -2734,7 +2718,7 @@ class MethodWriter extends MethodVisitor {
             cw.invalidFrames = true;
         }
         // updates the exception handler block labels
-        Handler h = firstHandler;
+        org.objectweb.asm.Handler h = firstHandler;
         while (h != null) {
             getNewOffset(allIndexes, allSizes, h.start);
             getNewOffset(allIndexes, allSizes, h.end);
@@ -2775,7 +2759,7 @@ class MethodWriter extends MethodVisitor {
         // updates the labels of the other attributes
         Attribute attr = cattrs;
         while (attr != null) {
-            Label[] labels = attr.getLabels();
+            org.objectweb.asm.Label[] labels = attr.getLabels();
             if (labels != null) {
                 for (i = labels.length - 1; i >= 0; --i) {
                     getNewOffset(allIndexes, allSizes, labels[i]);
@@ -2790,7 +2774,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Reads an unsigned short value in the given byte array.
-     * 
+     *
      * @param b
      *            a byte array.
      * @param index
@@ -2803,7 +2787,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Reads a signed short value in the given byte array.
-     * 
+     *
      * @param b
      *            a byte array.
      * @param index
@@ -2816,7 +2800,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Reads a signed int value in the given byte array.
-     * 
+     *
      * @param b
      *            a byte array.
      * @param index
@@ -2830,7 +2814,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Writes a short value in the given byte array.
-     * 
+     *
      * @param b
      *            a byte array.
      * @param index
@@ -2849,7 +2833,7 @@ class MethodWriter extends MethodVisitor {
      * Note: it is possible to have several entries for the same instruction in
      * the <tt>indexes</tt> and <tt>sizes</tt>: two entries (index=a,size=b) and
      * (index=a,size=b') are equivalent to a single entry (index=a,size=b+b').
-     * 
+     *
      * @param indexes
      *            current positions of the instructions to be resized. Each
      *            instruction must be designated by the index of its <i>last</i>
@@ -2871,7 +2855,7 @@ class MethodWriter extends MethodVisitor {
      * @return the future value of the given bytecode offset.
      */
     static int getNewOffset(final int[] indexes, final int[] sizes,
-            final int begin, final int end) {
+                            final int begin, final int end) {
         int offset = end - begin;
         for (int i = 0; i < indexes.length; ++i) {
             if (begin < indexes[i] && indexes[i] <= end) {
@@ -2887,7 +2871,7 @@ class MethodWriter extends MethodVisitor {
 
     /**
      * Updates the offset of the given label.
-     * 
+     *
      * @param indexes
      *            current positions of the instructions to be resized. Each
      *            instruction must be designated by the index of its <i>last</i>
@@ -2906,8 +2890,8 @@ class MethodWriter extends MethodVisitor {
      *            the label whose offset must be updated.
      */
     static void getNewOffset(final int[] indexes, final int[] sizes,
-            final Label label) {
-        if ((label.status & Label.RESIZED) == 0) {
+                             final org.objectweb.asm.Label label) {
+        if ((label.status & org.objectweb.asm.Label.RESIZED) == 0) {
             label.position = getNewOffset(indexes, sizes, 0, label.position);
             label.status |= Label.RESIZED;
         }

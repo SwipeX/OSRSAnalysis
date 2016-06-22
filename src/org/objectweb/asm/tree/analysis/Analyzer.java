@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,34 +29,22 @@
  */
 package org.objectweb.asm.tree.analysis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.IincInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LookupSwitchInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TableSwitchInsnNode;
-import org.objectweb.asm.tree.TryCatchBlockNode;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.*;
+
+import java.util.*;
 
 /**
  * A semantic bytecode analyzer. <i>This class does not fully check that JSR and
  * RET instructions are valid.</i>
- * 
+ *
  * @param <V>
  *            type of the Value used for the analysis.
- * 
+ *
  * @author Eric Bruneton
  */
-public class Analyzer<V extends Value> implements Opcodes {
+public class Analyzer<V extends org.objectweb.asm.tree.analysis.Value> implements Opcodes {
 
     private final Interpreter<V> interpreter;
 
@@ -66,7 +54,7 @@ public class Analyzer<V extends Value> implements Opcodes {
 
     private List<TryCatchBlockNode>[] handlers;
 
-    private Frame<V>[] frames;
+    private org.objectweb.asm.tree.analysis.Frame<V>[] frames;
 
     private Subroutine[] subroutines;
 
@@ -76,9 +64,12 @@ public class Analyzer<V extends Value> implements Opcodes {
 
     private int top;
 
+    public final List<List<AbstractInsnNode>> blocks = new LinkedList<>();
+    private final List<AbstractInsnNode> instructions = new LinkedList<>();
+
     /**
      * Constructs a new {@link Analyzer}.
-     * 
+     *
      * @param interpreter
      *            the interpreter to be used to symbolically interpret the
      *            bytecode instructions.
@@ -89,7 +80,7 @@ public class Analyzer<V extends Value> implements Opcodes {
 
     /**
      * Analyzes the given method.
-     * 
+     *
      * @param owner
      *            the internal name of the class to which the method belongs.
      * @param m
@@ -102,17 +93,16 @@ public class Analyzer<V extends Value> implements Opcodes {
      * @throws AnalyzerException
      *             if a problem occurs during the analysis.
      */
-    @SuppressWarnings("unchecked")
-    public Frame<V>[] analyze(final String owner, final MethodNode m)
+    public org.objectweb.asm.tree.analysis.Frame<V>[] analyze(final String owner, final MethodNode m)
             throws AnalyzerException {
         if ((m.access & (ACC_ABSTRACT | ACC_NATIVE)) != 0) {
-            frames = (Frame<V>[]) new Frame<?>[0];
+            frames = (org.objectweb.asm.tree.analysis.Frame<V>[]) new org.objectweb.asm.tree.analysis.Frame<?>[0];
             return frames;
         }
         n = m.instructions.size();
         insns = m.instructions;
         handlers = (List<TryCatchBlockNode>[]) new List<?>[n];
-        frames = (Frame<V>[]) new Frame<?>[n];
+        frames = (org.objectweb.asm.tree.analysis.Frame<V>[]) new org.objectweb.asm.tree.analysis.Frame<?>[n];
         subroutines = new Subroutine[n];
         queued = new boolean[n];
         queue = new int[n];
@@ -156,8 +146,8 @@ public class Analyzer<V extends Value> implements Opcodes {
         }
 
         // initializes the data structures for the control flow analysis
-        Frame<V> current = newFrame(m.maxLocals, m.maxStack);
-        Frame<V> handler = newFrame(m.maxLocals, m.maxStack);
+        org.objectweb.asm.tree.analysis.Frame<V> current = newFrame(m.maxLocals, m.maxStack);
+        org.objectweb.asm.tree.analysis.Frame<V> handler = newFrame(m.maxLocals, m.maxStack);
         current.setReturn(interpreter.newValue(Type.getReturnType(m.desc)));
         Type[] args = Type.getArgumentTypes(m.desc);
         int local = 0;
@@ -178,18 +168,20 @@ public class Analyzer<V extends Value> implements Opcodes {
 
         init(owner, m);
 
+        instructions.clear();
         // control flow analysis
         while (top > 0) {
             int insn = queue[--top];
-            Frame<V> f = frames[insn];
+            org.objectweb.asm.tree.analysis.Frame<V> f = frames[insn];
             Subroutine subroutine = subroutines[insn];
             queued[insn] = false;
 
             AbstractInsnNode insnNode = null;
             try {
                 insnNode = m.instructions.get(insn);
-                int insnOpcode = insnNode.getOpcode();
-                int insnType = insnNode.getType();
+                instructions.add(insnNode);
+                int insnOpcode = insnNode.opcode();
+                int insnType = insnNode.type();
 
                 if (insnType == AbstractInsnNode.LABEL
                         || insnType == AbstractInsnNode.LINE
@@ -208,16 +200,19 @@ public class Analyzer<V extends Value> implements Opcodes {
                         }
                         int jump = insns.indexOf(j.label);
                         if (insnOpcode == JSR) {
-                            merge(jump, current, new Subroutine(j.label,
-                                    m.maxLocals, j));
+                            merge(jump, current, new Subroutine(j.label, m.maxLocals, j));
                         } else {
                             merge(jump, current, subroutine);
+                            blocks.add(new LinkedList<>(instructions));
+                            instructions.clear();
                         }
                         newControlFlowEdge(insn, jump);
                     } else if (insnNode instanceof LookupSwitchInsnNode) {
                         LookupSwitchInsnNode lsi = (LookupSwitchInsnNode) insnNode;
                         int jump = insns.indexOf(lsi.dflt);
                         merge(jump, current, subroutine);
+                        blocks.add(new LinkedList<>(instructions));
+                        instructions.clear();
                         newControlFlowEdge(insn, jump);
                         for (int j = 0; j < lsi.labels.size(); ++j) {
                             LabelNode label = lsi.labels.get(j);
@@ -238,27 +233,24 @@ public class Analyzer<V extends Value> implements Opcodes {
                         }
                     } else if (insnOpcode == RET) {
                         if (subroutine == null) {
-                            throw new AnalyzerException(insnNode,
-                                    "RET instruction outside of a sub routine");
+                            throw new AnalyzerException(insnNode, "RET instruction outside of a sub routine");
                         }
                         for (int i = 0; i < subroutine.callers.size(); ++i) {
                             JumpInsnNode caller = subroutine.callers.get(i);
                             int call = insns.indexOf(caller);
                             if (frames[call] != null) {
-                                merge(call + 1, frames[call], current,
-                                        subroutines[call], subroutine.access);
+                                merge(call + 1, frames[call], current, subroutines[call], subroutine.access);
+                                blocks.add(new LinkedList<>(instructions));
+                                instructions.clear();
                                 newControlFlowEdge(insn, call + 1);
                             }
                         }
-                    } else if (insnOpcode != ATHROW
-                            && (insnOpcode < IRETURN || insnOpcode > RETURN)) {
+                    } else if (insnOpcode != ATHROW && (insnOpcode < IRETURN || insnOpcode > RETURN)) {
                         if (subroutine != null) {
                             if (insnNode instanceof VarInsnNode) {
                                 int var = ((VarInsnNode) insnNode).var;
                                 subroutine.access[var] = true;
-                                if (insnOpcode == LLOAD || insnOpcode == DLOAD
-                                        || insnOpcode == LSTORE
-                                        || insnOpcode == DSTORE) {
+                                if (insnOpcode == LLOAD || insnOpcode == DLOAD || insnOpcode == LSTORE || insnOpcode == DSTORE) {
                                     subroutine.access[var + 1] = true;
                                 }
                             } else if (insnNode instanceof IincInsnNode) {
@@ -291,11 +283,9 @@ public class Analyzer<V extends Value> implements Opcodes {
                     }
                 }
             } catch (AnalyzerException e) {
-                throw new AnalyzerException(e.node, "Error at instruction "
-                        + insn + ": " + e.getMessage(), e);
+                throw new AnalyzerException(e.node, "Error at instruction " + insn + ": " + e.getMessage(), e);
             } catch (Exception e) {
-                throw new AnalyzerException(insnNode, "Error at instruction "
-                        + insn + ": " + e.getMessage(), e);
+                throw new AnalyzerException(insnNode, "Error at instruction " + insn + ": " + e.getMessage(), e);
             }
         }
 
@@ -303,7 +293,7 @@ public class Analyzer<V extends Value> implements Opcodes {
     }
 
     private void findSubroutine(int insn, final Subroutine sub,
-            final List<AbstractInsnNode> calls) throws AnalyzerException {
+                                final List<AbstractInsnNode> calls) throws AnalyzerException {
         while (true) {
             if (insn < 0 || insn >= n) {
                 throw new AnalyzerException(null,
@@ -314,10 +304,10 @@ public class Analyzer<V extends Value> implements Opcodes {
             }
             subroutines[insn] = sub.copy();
             AbstractInsnNode node = insns.get(insn);
-
+            instructions.add(node);
             // calls findSubroutine recursively on normal successors
             if (node instanceof JumpInsnNode) {
-                if (node.getOpcode() == JSR) {
+                if (node.opcode() == JSR) {
                     // do not follow a JSR, it leads to another subroutine!
                     calls.add(node);
                 } else {
@@ -350,19 +340,19 @@ public class Analyzer<V extends Value> implements Opcodes {
             }
 
             // if insn does not falls through to the next instruction, return.
-            switch (node.getOpcode()) {
-            case GOTO:
-            case RET:
-            case TABLESWITCH:
-            case LOOKUPSWITCH:
-            case IRETURN:
-            case LRETURN:
-            case FRETURN:
-            case DRETURN:
-            case ARETURN:
-            case RETURN:
-            case ATHROW:
-                return;
+            switch (node.opcode()) {
+                case GOTO:
+                case RET:
+                case TABLESWITCH:
+                case LOOKUPSWITCH:
+                case IRETURN:
+                case LRETURN:
+                case FRETURN:
+                case DRETURN:
+                case ARETURN:
+                case RETURN:
+                case ATHROW:
+                    return;
             }
             insn++;
         }
@@ -371,7 +361,7 @@ public class Analyzer<V extends Value> implements Opcodes {
     /**
      * Returns the symbolic stack frame for each instruction of the last
      * recently analyzed method.
-     * 
+     *
      * @return the symbolic state of the execution stack frame at each bytecode
      *         instruction of the method. The size of the returned array is
      *         equal to the number of instructions (and labels) of the method. A
@@ -379,13 +369,13 @@ public class Analyzer<V extends Value> implements Opcodes {
      *         cannot be reached, or if an error occured during the analysis of
      *         the method.
      */
-    public Frame<V>[] getFrames() {
+    public org.objectweb.asm.tree.analysis.Frame<V>[] getFrames() {
         return frames;
     }
 
     /**
      * Returns the exception handlers for the given instruction.
-     * 
+     *
      * @param insn
      *            the index of an instruction of the last recently analyzed
      *            method.
@@ -399,7 +389,7 @@ public class Analyzer<V extends Value> implements Opcodes {
      * Initializes this analyzer. This method is called just before the
      * execution of control flow analysis loop in #analyze. The default
      * implementation of this method does nothing.
-     * 
+     *
      * @param owner
      *            the internal name of the class to which the method belongs.
      * @param m
@@ -412,26 +402,26 @@ public class Analyzer<V extends Value> implements Opcodes {
 
     /**
      * Constructs a new frame with the given size.
-     * 
+     *
      * @param nLocals
      *            the maximum number of local variables of the frame.
      * @param nStack
      *            the maximum stack size of the frame.
      * @return the created frame.
      */
-    protected Frame<V> newFrame(final int nLocals, final int nStack) {
-        return new Frame<V>(nLocals, nStack);
+    protected org.objectweb.asm.tree.analysis.Frame<V> newFrame(final int nLocals, final int nStack) {
+        return new org.objectweb.asm.tree.analysis.Frame<V>(nLocals, nStack);
     }
 
     /**
      * Constructs a new frame that is identical to the given frame.
-     * 
+     *
      * @param src
      *            a frame.
      * @return the created frame.
      */
-    protected Frame<V> newFrame(final Frame<? extends V> src) {
-        return new Frame<V>(src);
+    protected org.objectweb.asm.tree.analysis.Frame<V> newFrame(final org.objectweb.asm.tree.analysis.Frame<? extends V> src) {
+        return new org.objectweb.asm.tree.analysis.Frame<V>(src);
     }
 
     /**
@@ -439,7 +429,7 @@ public class Analyzer<V extends Value> implements Opcodes {
      * method does nothing. It can be overriden in order to construct the
      * control flow graph of a method (this method is called by the
      * {@link #analyze analyze} method during its visit of the method's code).
-     * 
+     *
      * @param insn
      *            an instruction index.
      * @param successor
@@ -454,7 +444,7 @@ public class Analyzer<V extends Value> implements Opcodes {
      * overridden in order to construct the control flow graph of a method (this
      * method is called by the {@link #analyze analyze} method during its visit
      * of the method's code).
-     * 
+     *
      * @param insn
      *            an instruction index.
      * @param successor
@@ -464,7 +454,7 @@ public class Analyzer<V extends Value> implements Opcodes {
      *         implementation of this method always returns true.
      */
     protected boolean newControlFlowExceptionEdge(final int insn,
-            final int successor) {
+                                                  final int successor) {
         return true;
     }
 
@@ -476,7 +466,7 @@ public class Analyzer<V extends Value> implements Opcodes {
      * construct the control flow graph of a method (this method is called by
      * the {@link #analyze analyze} method during its visit of the method's
      * code).
-     * 
+     *
      * @param insn
      *            an instruction index.
      * @param tcb
@@ -488,15 +478,15 @@ public class Analyzer<V extends Value> implements Opcodes {
      *         newControlFlowExceptionEdge(int, int)}.
      */
     protected boolean newControlFlowExceptionEdge(final int insn,
-            final TryCatchBlockNode tcb) {
+                                                  final TryCatchBlockNode tcb) {
         return newControlFlowExceptionEdge(insn, insns.indexOf(tcb.handler));
     }
 
     // -------------------------------------------------------------------------
 
-    private void merge(final int insn, final Frame<V> frame,
-            final Subroutine subroutine) throws AnalyzerException {
-        Frame<V> oldFrame = frames[insn];
+    private void merge(final int insn, final org.objectweb.asm.tree.analysis.Frame<V> frame,
+                       final Subroutine subroutine) throws AnalyzerException {
+        org.objectweb.asm.tree.analysis.Frame<V> oldFrame = frames[insn];
         Subroutine oldSubroutine = subroutines[insn];
         boolean changes;
 
@@ -523,9 +513,9 @@ public class Analyzer<V extends Value> implements Opcodes {
         }
     }
 
-    private void merge(final int insn, final Frame<V> beforeJSR,
-            final Frame<V> afterRET, final Subroutine subroutineBeforeJSR,
-            final boolean[] access) throws AnalyzerException {
+    private void merge(final int insn, final org.objectweb.asm.tree.analysis.Frame<V> beforeJSR,
+                       final org.objectweb.asm.tree.analysis.Frame<V> afterRET, final Subroutine subroutineBeforeJSR,
+                       final boolean[] access) throws AnalyzerException {
         Frame<V> oldFrame = frames[insn];
         Subroutine oldSubroutine = subroutines[insn];
         boolean changes;

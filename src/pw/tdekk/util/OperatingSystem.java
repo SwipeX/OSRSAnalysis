@@ -27,7 +27,7 @@ public enum OperatingSystem {
         return Character.toUpperCase(orig.charAt(0)) + orig.substring(1).toLowerCase();
     }
 
-    private boolean is64BitJVM() {
+    public boolean is64BitJVM() {
         String[] keys = {"sun.arch.data.model", "com.ibm.vm.bitmode", "os.arch"};
         for (String key : keys) {
             String property = System.getProperty(key);

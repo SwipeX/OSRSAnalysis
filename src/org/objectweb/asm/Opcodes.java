@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -37,27 +37,15 @@ package org.objectweb.asm;
  * opcodes are therefore not defined in this interface. Likewise for LDC,
  * automatically replaced by LDC_W or LDC2_W when necessary, WIDE, GOTO_W and
  * JSR_W.
- * 
+ *
  * @author Eric Bruneton
  * @author Eugene Kuleshov
  */
 public interface Opcodes {
 
-    // ASM API versions
-
-    int ASM4 = 4 << 16 | 0 << 8 | 0;
-    int ASM5 = 5 << 16 | 0 << 8 | 0;
-
-    // versions
-
-    int V1_1 = 3 << 16 | 45;
-    int V1_2 = 0 << 16 | 46;
-    int V1_3 = 0 << 16 | 47;
-    int V1_4 = 0 << 16 | 48;
-    int V1_5 = 0 << 16 | 49;
-    int V1_6 = 0 << 16 | 50;
-    int V1_7 = 0 << 16 | 51;
-    int V1_8 = 0 << 16 | 52;
+    int V1_5 = 49;
+    int V1_6 = 50;
+    int V1_8 = 52;
 
     // access flags
 
@@ -111,7 +99,7 @@ public interface Opcodes {
     // stack map frame types
 
     /**
-     * Represents an expanded frame. See {@link ClassReader#EXPAND_FRAMES}.
+     * Represents an expanded frame. See {@link org.objectweb.asm.ClassReader#EXPAND_FRAMES}.
      */
     int F_NEW = -1;
 

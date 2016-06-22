@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,7 +33,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * A node that represents a local variable declaration.
- * 
+ *
  * @author Eric Bruneton
  */
 public class LocalVariableNode {
@@ -57,13 +57,13 @@ public class LocalVariableNode {
      * The first instruction corresponding to the scope of this local variable
      * (inclusive).
      */
-    public LabelNode start;
+    public org.objectweb.asm.tree.LabelNode start;
 
     /**
      * The last instruction corresponding to the scope of this local variable
      * (exclusive).
      */
-    public LabelNode end;
+    public org.objectweb.asm.tree.LabelNode end;
 
     /**
      * The local variable's index.
@@ -72,7 +72,7 @@ public class LocalVariableNode {
 
     /**
      * Constructs a new {@link LocalVariableNode}.
-     * 
+     *
      * @param name
      *            the name of a local variable.
      * @param desc
@@ -89,8 +89,8 @@ public class LocalVariableNode {
      *            the local variable's index.
      */
     public LocalVariableNode(final String name, final String desc,
-            final String signature, final LabelNode start, final LabelNode end,
-            final int index) {
+                             final String signature, final org.objectweb.asm.tree.LabelNode start, final org.objectweb.asm.tree.LabelNode end,
+                             final int index) {
         this.name = name;
         this.desc = desc;
         this.signature = signature;
@@ -101,12 +101,11 @@ public class LocalVariableNode {
 
     /**
      * Makes the given visitor visit this local variable declaration.
-     * 
+     *
      * @param mv
      *            a method visitor.
      */
     public void accept(final MethodVisitor mv) {
-        mv.visitLocalVariable(name, desc, signature, start.getLabel(),
-                end.getLabel(), index);
+        mv.visitLocalVariable(this);
     }
 }

@@ -1,7 +1,6 @@
 package pw.tdekk.test;
 
 import java.applet.Applet;
-import java.applet.AppletContext;
 import java.applet.AppletStub;
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,9 +33,9 @@ package org.objectweb.asm;
  * A {@link ClassVisitor} that generates classes in bytecode form. More
  * precisely this visitor generates a byte array conforming to the Java class
  * file format. It can be used alone, to generate a Java class "from scratch",
- * or with one or more {@link ClassReader ClassReader} and adapter class visitor
+ * or with one or more {@link org.objectweb.asm.ClassReader ClassReader} and adapter class visitor
  * to generate a modified class from one or more existing Java classes.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ClassWriter extends ClassVisitor {
@@ -47,7 +47,7 @@ public class ClassWriter extends ClassVisitor {
      * {@link MethodVisitor} returned by the {@link #visitMethod visitMethod}
      * method will be ignored, and computed automatically from the signature and
      * the bytecode of each method.
-     * 
+     *
      * @see #ClassWriter(int)
      */
     public static final int COMPUTE_MAXS = 1;
@@ -60,7 +60,7 @@ public class ClassWriter extends ClassVisitor {
      * {@link MethodVisitor#visitMaxs visitMaxs} method are also ignored and
      * recomputed from the bytecode. In other words, computeFrames implies
      * computeMaxs.
-     * 
+     *
      * @see #ClassWriter(int)
      */
     public static final int COMPUTE_FRAMES = 2;
@@ -75,7 +75,7 @@ public class ClassWriter extends ClassVisitor {
      * Factor to convert from ACC_SYNTHETIC_ATTRIBUTE to Opcode.ACC_SYNTHETIC.
      */
     static final int TO_ACC_SYNTHETIC = ACC_SYNTHETIC_ATTRIBUTE
-            / Opcodes.ACC_SYNTHETIC;
+            / org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
 
     /**
      * The type of instructions without any argument.
@@ -280,7 +280,7 @@ public class ClassWriter extends ClassVisitor {
     /**
      * The class reader from which this class writer was constructed, if any.
      */
-    ClassReader cr;
+    org.objectweb.asm.ClassReader cr;
 
     /**
      * Minor and major version numbers of the class to be generated.
@@ -295,12 +295,12 @@ public class ClassWriter extends ClassVisitor {
     /**
      * The constant pool of this class.
      */
-    final ByteVector pool;
+    final org.objectweb.asm.ByteVector pool;
 
     /**
      * The constant pool's hash table data.
      */
-    Item[] items;
+    org.objectweb.asm.Item[] items;
 
     /**
      * The threshold of the constant pool's hash table.
@@ -310,22 +310,22 @@ public class ClassWriter extends ClassVisitor {
     /**
      * A reusable key used to look for items in the {@link #items} hash table.
      */
-    final Item key;
+    final org.objectweb.asm.Item key;
 
     /**
      * A reusable key used to look for items in the {@link #items} hash table.
      */
-    final Item key2;
+    final org.objectweb.asm.Item key2;
 
     /**
      * A reusable key used to look for items in the {@link #items} hash table.
      */
-    final Item key3;
+    final org.objectweb.asm.Item key3;
 
     /**
      * A reusable key used to look for items in the {@link #items} hash table.
      */
-    final Item key4;
+    final org.objectweb.asm.Item key4;
 
     /**
      * A type table used to temporarily store internal names that will not
@@ -336,9 +336,9 @@ public class ClassWriter extends ClassVisitor {
      * are also stored in the {@link #items} hash table. These two arrays allow
      * to retrieve an Item from its index or, conversely, to get the index of an
      * Item from its value. Each Item stores an internal name in its
-     * {@link Item#strVal1} field.
+     * {@link org.objectweb.asm.Item#strVal1} field.
      */
-    Item[] typeTable;
+    org.objectweb.asm.Item[] typeTable;
 
     /**
      * Number of elements in the {@link #typeTable} array.
@@ -392,7 +392,7 @@ public class ClassWriter extends ClassVisitor {
     /**
      * The SourceDebug attribute of this class.
      */
-    private ByteVector sourceDebug;
+    private org.objectweb.asm.ByteVector sourceDebug;
 
     /**
      * The constant pool item that contains the name of the enclosing class of
@@ -429,7 +429,7 @@ public class ClassWriter extends ClassVisitor {
     /**
      * The non standard attributes of this class.
      */
-    private Attribute attrs;
+    private org.objectweb.asm.Attribute attrs;
 
     /**
      * The number of entries in the InnerClasses attribute.
@@ -439,7 +439,7 @@ public class ClassWriter extends ClassVisitor {
     /**
      * The InnerClasses attribute.
      */
-    private ByteVector innerClasses;
+    private org.objectweb.asm.ByteVector innerClasses;
 
     /**
      * The number of entries in the BootstrapMethods attribute.
@@ -449,7 +449,7 @@ public class ClassWriter extends ClassVisitor {
     /**
      * The BootstrapMethods attribute.
      */
-    ByteVector bootstrapMethods;
+    org.objectweb.asm.ByteVector bootstrapMethods;
 
     /**
      * The fields of this class. These fields are stored in a linked list of
@@ -469,8 +469,8 @@ public class ClassWriter extends ClassVisitor {
 
     /**
      * The methods of this class. These methods are stored in a linked list of
-     * {@link MethodWriter} objects, linked to each other by their
-     * {@link MethodWriter#mv} field. This field stores the first element of
+     * {@link org.objectweb.asm.MethodWriter} objects, linked to each other by their
+     * {@link org.objectweb.asm.MethodWriter#mv} field. This field stores the first element of
      * this list.
      */
     MethodWriter firstMethod;
@@ -598,22 +598,21 @@ public class ClassWriter extends ClassVisitor {
 
     /**
      * Constructs a new {@link ClassWriter} object.
-     * 
+     *
      * @param flags
      *            option flags that can be used to modify the default behavior
      *            of this class. See {@link #COMPUTE_MAXS},
      *            {@link #COMPUTE_FRAMES}.
      */
     public ClassWriter(final int flags) {
-        super(Opcodes.ASM5);
         index = 1;
-        pool = new ByteVector();
-        items = new Item[256];
+        pool = new org.objectweb.asm.ByteVector();
+        items = new org.objectweb.asm.Item[256];
         threshold = (int) (0.75d * items.length);
-        key = new Item();
-        key2 = new Item();
-        key3 = new Item();
-        key4 = new Item();
+        key = new org.objectweb.asm.Item();
+        key2 = new org.objectweb.asm.Item();
+        key3 = new org.objectweb.asm.Item();
+        key4 = new org.objectweb.asm.Item();
         this.computeMaxs = (flags & COMPUTE_MAXS) != 0;
         this.computeFrames = (flags & COMPUTE_FRAMES) != 0;
     }
@@ -622,7 +621,7 @@ public class ClassWriter extends ClassVisitor {
      * Constructs a new {@link ClassWriter} object and enables optimizations for
      * "mostly add" bytecode transformations. These optimizations are the
      * following:
-     * 
+     *
      * <ul>
      * <li>The constant pool from the original class is copied as is in the new
      * class, which saves time. New constant pool entries will be added at the
@@ -632,13 +631,13 @@ public class ClassWriter extends ClassVisitor {
      * directly from the original class bytecode (i.e. without emitting visit
      * events for all the method instructions), which saves a <i>lot</i> of
      * time. Untransformed methods are detected by the fact that the
-     * {@link ClassReader} receives {@link MethodVisitor} objects that come from
+     * {@link org.objectweb.asm.ClassReader} receives {@link MethodVisitor} objects that come from
      * a {@link ClassWriter} (and not from any other {@link ClassVisitor}
      * instance).</li>
      * </ul>
-     * 
+     *
      * @param classReader
-     *            the {@link ClassReader} used to read the original class. It
+     *            the {@link org.objectweb.asm.ClassReader} used to read the original class. It
      *            will be used to copy the entire constant pool from the
      *            original class and also to copy other fragments of original
      *            bytecode where applicable.
@@ -650,7 +649,7 @@ public class ClassWriter extends ClassVisitor {
      *            these methods</i>. See {@link #COMPUTE_MAXS},
      *            {@link #COMPUTE_FRAMES}.
      */
-    public ClassWriter(final ClassReader classReader, final int flags) {
+    public ClassWriter(final org.objectweb.asm.ClassReader classReader, final int flags) {
         this(flags);
         classReader.copyPool(this);
         this.cr = classReader;
@@ -662,13 +661,13 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final void visit(final int version, final int access,
-            final String name, final String signature, final String superName,
-            final String[] interfaces) {
+                            final String name, final String signature, final String superName,
+                            final String[] interfaces) {
         this.version = version;
         this.access = access;
         this.name = newClass(name);
         thisName = name;
-        if (ClassReader.SIGNATURES && signature != null) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES && signature != null) {
             this.signature = newUTF8(signature);
         }
         this.superName = superName == null ? 0 : newClass(superName);
@@ -687,14 +686,14 @@ public class ClassWriter extends ClassVisitor {
             sourceFile = newUTF8(file);
         }
         if (debug != null) {
-            sourceDebug = new ByteVector().encodeUTF8(debug, 0,
+            sourceDebug = new org.objectweb.asm.ByteVector().encodeUTF8(debug, 0,
                     Integer.MAX_VALUE);
         }
     }
 
     @Override
     public final void visitOuterClass(final String owner, final String name,
-            final String desc) {
+                                      final String desc) {
         enclosingMethodOwner = newClass(owner);
         if (name != null && desc != null) {
             enclosingMethod = newNameType(name, desc);
@@ -703,11 +702,11 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+                                                   final boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write type, and reserve space for values count
         bv.putShort(newUTF8(desc)).putShort(0);
         AnnotationWriter aw = new AnnotationWriter(this, true, bv, bv, 2);
@@ -723,11 +722,11 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, final String desc, final boolean visible) {
-        if (!ClassReader.ANNOTATIONS) {
+                                                       TypePath typePath, final String desc, final boolean visible) {
+        if (!org.objectweb.asm.ClassReader.ANNOTATIONS) {
             return null;
         }
-        ByteVector bv = new ByteVector();
+        org.objectweb.asm.ByteVector bv = new org.objectweb.asm.ByteVector();
         // write target_type and target_info
         AnnotationWriter.putTarget(typeRef, typePath, bv);
         // write type, and reserve space for values count
@@ -752,11 +751,11 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final void visitInnerClass(final String name,
-            final String outerName, final String innerName, final int access) {
+                                      final String outerName, final String innerName, final int access) {
         if (innerClasses == null) {
-            innerClasses = new ByteVector();
+            innerClasses = new org.objectweb.asm.ByteVector();
         }
-        // Sec. 4.7.6 of the JVMS states "Every CONSTANT_Class_info entry in the
+        // 4.7.6 of the JVMS states "Every CONSTANT_Class_info entry in the
         // constant_pool table which represents a class or interface C that is
         // not a package member must have exactly one corresponding entry in the
         // classes array". To avoid duplicates we keep track in the intVal field
@@ -766,7 +765,7 @@ public class ClassWriter extends ClassVisitor {
         // and equality tests). If so we store the index of this inner class
         // entry (plus one) in intVal. This hack allows duplicate detection in
         // O(1) time.
-        Item nameItem = newClassItem(name);
+        org.objectweb.asm.Item nameItem = newClassItem(name);
         if (nameItem.intVal == 0) {
             ++innerClassesCount;
             innerClasses.putShort(nameItem.index);
@@ -783,13 +782,13 @@ public class ClassWriter extends ClassVisitor {
 
     @Override
     public final FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                         final String desc, final String signature, final Object value) {
         return new FieldWriter(this, access, name, desc, signature, value);
     }
 
     @Override
     public final MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                           final String desc, final String signature, final String[] exceptions) {
         return new MethodWriter(this, access, name, desc, signature,
                 exceptions, computeMaxs, computeFrames);
     }
@@ -804,7 +803,7 @@ public class ClassWriter extends ClassVisitor {
 
     /**
      * Returns the bytecode of the class that was build with this class writer.
-     * 
+     *
      * @return the bytecode of the class that was build with this class writer.
      */
     public byte[] toByteArray() {
@@ -835,7 +834,7 @@ public class ClassWriter extends ClassVisitor {
             size += 8 + bootstrapMethods.length;
             newUTF8("BootstrapMethods");
         }
-        if (ClassReader.SIGNATURES && signature != 0) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES && signature != 0) {
             ++attributeCount;
             size += 8;
             newUTF8("Signature");
@@ -855,14 +854,13 @@ public class ClassWriter extends ClassVisitor {
             size += 10;
             newUTF8("EnclosingMethod");
         }
-        if ((access & Opcodes.ACC_DEPRECATED) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_DEPRECATED) != 0) {
             ++attributeCount;
             size += 6;
             newUTF8("Deprecated");
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-            if ((version & 0xFFFF) < Opcodes.V1_5
-                    || (access & ACC_SYNTHETIC_ATTRIBUTE) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((version & 0xFFFF) < org.objectweb.asm.Opcodes.V1_5 || (access & ACC_SYNTHETIC_ATTRIBUTE) != 0) {
                 ++attributeCount;
                 size += 6;
                 newUTF8("Synthetic");
@@ -873,22 +871,22 @@ public class ClassWriter extends ClassVisitor {
             size += 8 + innerClasses.length;
             newUTF8("InnerClasses");
         }
-        if (ClassReader.ANNOTATIONS && anns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && anns != null) {
             ++attributeCount;
             size += 8 + anns.getSize();
             newUTF8("RuntimeVisibleAnnotations");
         }
-        if (ClassReader.ANNOTATIONS && ianns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ianns != null) {
             ++attributeCount;
             size += 8 + ianns.getSize();
             newUTF8("RuntimeInvisibleAnnotations");
         }
-        if (ClassReader.ANNOTATIONS && tanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && tanns != null) {
             ++attributeCount;
             size += 8 + tanns.getSize();
             newUTF8("RuntimeVisibleTypeAnnotations");
         }
-        if (ClassReader.ANNOTATIONS && itanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && itanns != null) {
             ++attributeCount;
             size += 8 + itanns.getSize();
             newUTF8("RuntimeInvisibleTypeAnnotations");
@@ -900,10 +898,10 @@ public class ClassWriter extends ClassVisitor {
         size += pool.length;
         // allocates a byte vector of this size, in order to avoid unnecessary
         // arraycopy operations in the ByteVector.enlarge() method
-        ByteVector out = new ByteVector(size);
+        org.objectweb.asm.ByteVector out = new org.objectweb.asm.ByteVector(size);
         out.putInt(0xCAFEBABE).putInt(version);
         out.putShort(index).putByteArray(pool.data, 0, pool.length);
-        int mask = Opcodes.ACC_DEPRECATED | ACC_SYNTHETIC_ATTRIBUTE
+        int mask = org.objectweb.asm.Opcodes.ACC_DEPRECATED | ACC_SYNTHETIC_ATTRIBUTE
                 | ((access & ACC_SYNTHETIC_ATTRIBUTE) / TO_ACC_SYNTHETIC);
         out.putShort(access & ~mask).putShort(name).putShort(superName);
         out.putShort(interfaceCount);
@@ -929,7 +927,7 @@ public class ClassWriter extends ClassVisitor {
                     bootstrapMethodsCount);
             out.putByteArray(bootstrapMethods.data, 0, bootstrapMethods.length);
         }
-        if (ClassReader.SIGNATURES && signature != 0) {
+        if (org.objectweb.asm.ClassReader.SIGNATURES && signature != 0) {
             out.putShort(newUTF8("Signature")).putInt(2).putShort(signature);
         }
         if (sourceFile != 0) {
@@ -944,11 +942,11 @@ public class ClassWriter extends ClassVisitor {
             out.putShort(newUTF8("EnclosingMethod")).putInt(4);
             out.putShort(enclosingMethodOwner).putShort(enclosingMethod);
         }
-        if ((access & Opcodes.ACC_DEPRECATED) != 0) {
+        if ((access & org.objectweb.asm.Opcodes.ACC_DEPRECATED) != 0) {
             out.putShort(newUTF8("Deprecated")).putInt(0);
         }
-        if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
-            if ((version & 0xFFFF) < Opcodes.V1_5
+        if ((access & org.objectweb.asm.Opcodes.ACC_SYNTHETIC) != 0) {
+            if ((version & 0xFFFF) < org.objectweb.asm.Opcodes.V1_5
                     || (access & ACC_SYNTHETIC_ATTRIBUTE) != 0) {
                 out.putShort(newUTF8("Synthetic")).putInt(0);
             }
@@ -958,19 +956,19 @@ public class ClassWriter extends ClassVisitor {
             out.putInt(innerClasses.length + 2).putShort(innerClassesCount);
             out.putByteArray(innerClasses.data, 0, innerClasses.length);
         }
-        if (ClassReader.ANNOTATIONS && anns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && anns != null) {
             out.putShort(newUTF8("RuntimeVisibleAnnotations"));
             anns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && ianns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && ianns != null) {
             out.putShort(newUTF8("RuntimeInvisibleAnnotations"));
             ianns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && tanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && tanns != null) {
             out.putShort(newUTF8("RuntimeVisibleTypeAnnotations"));
             tanns.put(out);
         }
-        if (ClassReader.ANNOTATIONS && itanns != null) {
+        if (org.objectweb.asm.ClassReader.ANNOTATIONS && itanns != null) {
             out.putShort(newUTF8("RuntimeInvisibleTypeAnnotations"));
             itanns.put(out);
         }
@@ -992,7 +990,7 @@ public class ClassWriter extends ClassVisitor {
             computeMaxs = false;
             computeFrames = true;
             invalidFrames = false;
-            new ClassReader(out.data).accept(this, ClassReader.SKIP_FRAMES);
+            new org.objectweb.asm.ClassReader(out.data).accept(this, ClassReader.SKIP_FRAMES);
             return toByteArray();
         }
         return out.data;
@@ -1005,15 +1003,15 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a number or string constant to the constant pool of the class being
      * build. Does nothing if the constant pool already contains a similar item.
-     * 
+     *
      * @param cst
      *            the value of the constant to be added to the constant pool.
      *            This parameter must be an {@link Integer}, a {@link Float}, a
      *            {@link Long}, a {@link Double}, a {@link String} or a
-     *            {@link Type}.
+     *            {@link org.objectweb.asm.Type}.
      * @return a new or already existing constant item with the given value.
      */
-    Item newConstItem(final Object cst) {
+    org.objectweb.asm.Item newConstItem(final Object cst) {
         if (cst instanceof Integer) {
             int val = ((Integer) cst).intValue();
             return newInteger(val);
@@ -1040,19 +1038,19 @@ public class ClassWriter extends ClassVisitor {
             return newDouble(val);
         } else if (cst instanceof String) {
             return newString((String) cst);
-        } else if (cst instanceof Type) {
-            Type t = (Type) cst;
+        } else if (cst instanceof org.objectweb.asm.Type) {
+            org.objectweb.asm.Type t = (org.objectweb.asm.Type) cst;
             int s = t.getSort();
-            if (s == Type.OBJECT) {
+            if (s == org.objectweb.asm.Type.OBJECT) {
                 return newClassItem(t.getInternalName());
             } else if (s == Type.METHOD) {
                 return newMethodTypeItem(t.getDescriptor());
             } else { // s == primitive type or array
                 return newClassItem(t.getDescriptor());
             }
-        } else if (cst instanceof Handle) {
-            Handle h = (Handle) cst;
-            return newHandleItem(h.tag, h.owner, h.name, h.desc, h.itf);
+        } else if (cst instanceof org.objectweb.asm.Handle) {
+            org.objectweb.asm.Handle h = (org.objectweb.asm.Handle) cst;
+            return newHandleItem(h.tag, h.owner, h.name, h.desc);
         } else {
             throw new IllegalArgumentException("value " + cst);
         }
@@ -1063,7 +1061,7 @@ public class ClassWriter extends ClassVisitor {
      * build. Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param cst
      *            the value of the constant to be added to the constant pool.
      *            This parameter must be an {@link Integer}, a {@link Float}, a
@@ -1080,17 +1078,17 @@ public class ClassWriter extends ClassVisitor {
      * nothing if the constant pool already contains a similar item. <i>This
      * method is intended for {@link Attribute} sub classes, and is normally not
      * needed by class generators or adapters.</i>
-     * 
+     *
      * @param value
      *            the String value.
      * @return the index of a new or already existing UTF8 item.
      */
     public int newUTF8(final String value) {
         key.set(UTF8, value, null, null);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             pool.putByte(UTF8).putUTF8(value);
-            result = new Item(index++, key);
+            result = new org.objectweb.asm.Item(index++, key);
             put(result);
         }
         return result.index;
@@ -1101,17 +1099,17 @@ public class ClassWriter extends ClassVisitor {
      * Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param value
      *            the internal name of the class.
      * @return a new or already existing class reference item.
      */
-    Item newClassItem(final String value) {
+    org.objectweb.asm.Item newClassItem(final String value) {
         key2.set(CLASS, value, null, null);
-        Item result = get(key2);
+        org.objectweb.asm.Item result = get(key2);
         if (result == null) {
             pool.put12(CLASS, newUTF8(value));
-            result = new Item(index++, key2);
+            result = new org.objectweb.asm.Item(index++, key2);
             put(result);
         }
         return result;
@@ -1122,7 +1120,7 @@ public class ClassWriter extends ClassVisitor {
      * Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param value
      *            the internal name of the class.
      * @return the index of a new or already existing class reference item.
@@ -1136,17 +1134,17 @@ public class ClassWriter extends ClassVisitor {
      * build. Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param methodDesc
      *            method descriptor of the method type.
      * @return a new or already existing method type reference item.
      */
-    Item newMethodTypeItem(final String methodDesc) {
+    org.objectweb.asm.Item newMethodTypeItem(final String methodDesc) {
         key2.set(MTYPE, methodDesc, null, null);
-        Item result = get(key2);
+        org.objectweb.asm.Item result = get(key2);
         if (result == null) {
             pool.put12(MTYPE, newUTF8(methodDesc));
-            result = new Item(index++, key2);
+            result = new org.objectweb.asm.Item(index++, key2);
             put(result);
         }
         return result;
@@ -1157,7 +1155,7 @@ public class ClassWriter extends ClassVisitor {
      * build. Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param methodDesc
      *            method descriptor of the method type.
      * @return the index of a new or already existing method type reference
@@ -1172,38 +1170,37 @@ public class ClassWriter extends ClassVisitor {
      * if the constant pool already contains a similar item. <i>This method is
      * intended for {@link Attribute} sub classes, and is normally not needed by
      * class generators or adapters.</i>
-     * 
+     *
      * @param tag
-     *            the kind of this handle. Must be {@link Opcodes#H_GETFIELD},
-     *            {@link Opcodes#H_GETSTATIC}, {@link Opcodes#H_PUTFIELD},
-     *            {@link Opcodes#H_PUTSTATIC}, {@link Opcodes#H_INVOKEVIRTUAL},
-     *            {@link Opcodes#H_INVOKESTATIC},
-     *            {@link Opcodes#H_INVOKESPECIAL},
-     *            {@link Opcodes#H_NEWINVOKESPECIAL} or
-     *            {@link Opcodes#H_INVOKEINTERFACE}.
+     *            the kind of this handle. Must be {@link org.objectweb.asm.Opcodes#H_GETFIELD},
+     *            {@link org.objectweb.asm.Opcodes#H_GETSTATIC}, {@link org.objectweb.asm.Opcodes#H_PUTFIELD},
+     *            {@link org.objectweb.asm.Opcodes#H_PUTSTATIC}, {@link org.objectweb.asm.Opcodes#H_INVOKEVIRTUAL},
+     *            {@link org.objectweb.asm.Opcodes#H_INVOKESTATIC},
+     *            {@link org.objectweb.asm.Opcodes#H_INVOKESPECIAL},
+     *            {@link org.objectweb.asm.Opcodes#H_NEWINVOKESPECIAL} or
+     *            {@link org.objectweb.asm.Opcodes#H_INVOKEINTERFACE}.
      * @param owner
      *            the internal name of the field or method owner class.
      * @param name
      *            the name of the field or method.
      * @param desc
      *            the descriptor of the field or method.
-     * @param itf
-     *            true if the owner is an interface.
      * @return a new or an already existing method type reference item.
      */
-    Item newHandleItem(final int tag, final String owner, final String name,
-            final String desc, final boolean itf) {
+    org.objectweb.asm.Item newHandleItem(final int tag, final String owner, final String name,
+                                         final String desc) {
         key4.set(HANDLE_BASE + tag, owner, name, desc);
-        Item result = get(key4);
+        org.objectweb.asm.Item result = get(key4);
         if (result == null) {
-            if (tag <= Opcodes.H_PUTSTATIC) {
+            if (tag <= org.objectweb.asm.Opcodes.H_PUTSTATIC) {
                 put112(HANDLE, tag, newField(owner, name, desc));
             } else {
                 put112(HANDLE,
                         tag,
-                        newMethod(owner, name, desc, itf));
+                        newMethod(owner, name, desc,
+                                tag == Opcodes.H_INVOKEINTERFACE));
             }
-            result = new Item(index++, key4);
+            result = new org.objectweb.asm.Item(index++, key4);
             put(result);
         }
         return result;
@@ -1214,7 +1211,7 @@ public class ClassWriter extends ClassVisitor {
      * if the constant pool already contains a similar item. <i>This method is
      * intended for {@link Attribute} sub classes, and is normally not needed by
      * class generators or adapters.</i>
-     * 
+     *
      * @param tag
      *            the kind of this handle. Must be {@link Opcodes#H_GETFIELD},
      *            {@link Opcodes#H_GETSTATIC}, {@link Opcodes#H_PUTFIELD},
@@ -1231,52 +1228,18 @@ public class ClassWriter extends ClassVisitor {
      *            the descriptor of the field or method.
      * @return the index of a new or already existing method type reference
      *         item.
-     *         
-     * @deprecated this method is superseded by
-     *             {@link #newHandle(int, String, String, String, boolean)}.
      */
-    @Deprecated
     public int newHandle(final int tag, final String owner, final String name,
-            final String desc) {
-        return newHandle(tag, owner, name, desc, tag == Opcodes.H_INVOKEINTERFACE);
+                         final String desc) {
+        return newHandleItem(tag, owner, name, desc).index;
     }
 
-    /**
-     * Adds a handle to the constant pool of the class being build. Does nothing
-     * if the constant pool already contains a similar item. <i>This method is
-     * intended for {@link Attribute} sub classes, and is normally not needed by
-     * class generators or adapters.</i>
-     * 
-     * @param tag
-     *            the kind of this handle. Must be {@link Opcodes#H_GETFIELD},
-     *            {@link Opcodes#H_GETSTATIC}, {@link Opcodes#H_PUTFIELD},
-     *            {@link Opcodes#H_PUTSTATIC}, {@link Opcodes#H_INVOKEVIRTUAL},
-     *            {@link Opcodes#H_INVOKESTATIC},
-     *            {@link Opcodes#H_INVOKESPECIAL},
-     *            {@link Opcodes#H_NEWINVOKESPECIAL} or
-     *            {@link Opcodes#H_INVOKEINTERFACE}.
-     * @param owner
-     *            the internal name of the field or method owner class.
-     * @param name
-     *            the name of the field or method.
-     * @param desc
-     *            the descriptor of the field or method.
-     * @param itf
-     *            true if the owner is an interface.
-     * @return the index of a new or already existing method type reference
-     *         item.
-     */
-    public int newHandle(final int tag, final String owner, final String name,
-            final String desc, final boolean itf) {
-        return newHandleItem(tag, owner, name, desc, itf).index;
-    }
-    
     /**
      * Adds an invokedynamic reference to the constant pool of the class being
      * build. Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param name
      *            name of the invoked method.
      * @param desc
@@ -1285,13 +1248,13 @@ public class ClassWriter extends ClassVisitor {
      *            the bootstrap method.
      * @param bsmArgs
      *            the bootstrap method constant arguments.
-     * 
+     *
      * @return a new or an already existing invokedynamic type reference item.
      */
-    Item newInvokeDynamicItem(final String name, final String desc,
-            final Handle bsm, final Object... bsmArgs) {
+    org.objectweb.asm.Item newInvokeDynamicItem(final String name, final String desc,
+                                                final org.objectweb.asm.Handle bsm, final Object... bsmArgs) {
         // cache for performance
-        ByteVector bootstrapMethods = this.bootstrapMethods;
+        org.objectweb.asm.ByteVector bootstrapMethods = this.bootstrapMethods;
         if (bootstrapMethods == null) {
             bootstrapMethods = this.bootstrapMethods = new ByteVector();
         }
@@ -1300,7 +1263,7 @@ public class ClassWriter extends ClassVisitor {
 
         int hashCode = bsm.hashCode();
         bootstrapMethods.putShort(newHandle(bsm.tag, bsm.owner, bsm.name,
-                bsm.desc, bsm.isInterface()));
+                bsm.desc));
 
         int argsLength = bsmArgs.length;
         bootstrapMethods.putShort(argsLength);
@@ -1314,15 +1277,16 @@ public class ClassWriter extends ClassVisitor {
         byte[] data = bootstrapMethods.data;
         int length = (1 + 1 + argsLength) << 1; // (bsm + argCount + arguments)
         hashCode &= 0x7FFFFFFF;
-        Item result = items[hashCode % items.length];
-        loop: while (result != null) {
+        org.objectweb.asm.Item result = items[hashCode % items.length];
+        loop:
+        while (result != null) {
             if (result.type != BSM || result.hashCode != hashCode) {
                 result = result.next;
                 continue;
             }
 
             // because the data encode the size of the argument
-            // we don't need to test if these size are equals
+            // we don't need to oldschool if these size are equals
             int resultPosition = result.intVal;
             for (int p = 0; p < length; p++) {
                 if (data[position + p] != data[resultPosition + p]) {
@@ -1339,7 +1303,7 @@ public class ClassWriter extends ClassVisitor {
             bootstrapMethods.length = position; // revert to old position
         } else {
             bootstrapMethodIndex = bootstrapMethodsCount++;
-            result = new Item(bootstrapMethodIndex);
+            result = new org.objectweb.asm.Item(bootstrapMethodIndex);
             result.set(position, hashCode);
             put(result);
         }
@@ -1349,7 +1313,7 @@ public class ClassWriter extends ClassVisitor {
         result = get(key3);
         if (result == null) {
             put122(INDY, bootstrapMethodIndex, newNameType(name, desc));
-            result = new Item(index++, key3);
+            result = new org.objectweb.asm.Item(index++, key3);
             put(result);
         }
         return result;
@@ -1360,7 +1324,7 @@ public class ClassWriter extends ClassVisitor {
      * build. Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param name
      *            name of the invoked method.
      * @param desc
@@ -1369,19 +1333,19 @@ public class ClassWriter extends ClassVisitor {
      *            the bootstrap method.
      * @param bsmArgs
      *            the bootstrap method constant arguments.
-     * 
+     *
      * @return the index of a new or already existing invokedynamic reference
      *         item.
      */
     public int newInvokeDynamic(final String name, final String desc,
-            final Handle bsm, final Object... bsmArgs) {
+                                final Handle bsm, final Object... bsmArgs) {
         return newInvokeDynamicItem(name, desc, bsm, bsmArgs).index;
     }
 
     /**
      * Adds a field reference to the constant pool of the class being build.
      * Does nothing if the constant pool already contains a similar item.
-     * 
+     *
      * @param owner
      *            the internal name of the field's owner class.
      * @param name
@@ -1390,12 +1354,12 @@ public class ClassWriter extends ClassVisitor {
      *            the field's descriptor.
      * @return a new or already existing field reference item.
      */
-    Item newFieldItem(final String owner, final String name, final String desc) {
+    org.objectweb.asm.Item newFieldItem(final String owner, final String name, final String desc) {
         key3.set(FIELD, owner, name, desc);
-        Item result = get(key3);
+        org.objectweb.asm.Item result = get(key3);
         if (result == null) {
             put122(FIELD, newClass(owner), newNameType(name, desc));
-            result = new Item(index++, key3);
+            result = new org.objectweb.asm.Item(index++, key3);
             put(result);
         }
         return result;
@@ -1406,7 +1370,7 @@ public class ClassWriter extends ClassVisitor {
      * Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param owner
      *            the internal name of the field's owner class.
      * @param name
@@ -1422,7 +1386,7 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a method reference to the constant pool of the class being build.
      * Does nothing if the constant pool already contains a similar item.
-     * 
+     *
      * @param owner
      *            the internal name of the method's owner class.
      * @param name
@@ -1433,14 +1397,14 @@ public class ClassWriter extends ClassVisitor {
      *            <tt>true</tt> if <tt>owner</tt> is an interface.
      * @return a new or already existing method reference item.
      */
-    Item newMethodItem(final String owner, final String name,
-            final String desc, final boolean itf) {
+    org.objectweb.asm.Item newMethodItem(final String owner, final String name,
+                                         final String desc, final boolean itf) {
         int type = itf ? IMETH : METH;
         key3.set(type, owner, name, desc);
-        Item result = get(key3);
+        org.objectweb.asm.Item result = get(key3);
         if (result == null) {
             put122(type, newClass(owner), newNameType(name, desc));
-            result = new Item(index++, key3);
+            result = new org.objectweb.asm.Item(index++, key3);
             put(result);
         }
         return result;
@@ -1451,7 +1415,7 @@ public class ClassWriter extends ClassVisitor {
      * Does nothing if the constant pool already contains a similar item.
      * <i>This method is intended for {@link Attribute} sub classes, and is
      * normally not needed by class generators or adapters.</i>
-     * 
+     *
      * @param owner
      *            the internal name of the method's owner class.
      * @param name
@@ -1463,24 +1427,24 @@ public class ClassWriter extends ClassVisitor {
      * @return the index of a new or already existing method reference item.
      */
     public int newMethod(final String owner, final String name,
-            final String desc, final boolean itf) {
+                         final String desc, final boolean itf) {
         return newMethodItem(owner, name, desc, itf).index;
     }
 
     /**
      * Adds an integer to the constant pool of the class being build. Does
      * nothing if the constant pool already contains a similar item.
-     * 
+     *
      * @param value
      *            the int value.
      * @return a new or already existing int item.
      */
-    Item newInteger(final int value) {
+    org.objectweb.asm.Item newInteger(final int value) {
         key.set(value);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             pool.putByte(INT).putInt(value);
-            result = new Item(index++, key);
+            result = new org.objectweb.asm.Item(index++, key);
             put(result);
         }
         return result;
@@ -1489,17 +1453,17 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a float to the constant pool of the class being build. Does nothing
      * if the constant pool already contains a similar item.
-     * 
+     *
      * @param value
      *            the float value.
      * @return a new or already existing float item.
      */
-    Item newFloat(final float value) {
+    org.objectweb.asm.Item newFloat(final float value) {
         key.set(value);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             pool.putByte(FLOAT).putInt(key.intVal);
-            result = new Item(index++, key);
+            result = new org.objectweb.asm.Item(index++, key);
             put(result);
         }
         return result;
@@ -1508,17 +1472,17 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a long to the constant pool of the class being build. Does nothing
      * if the constant pool already contains a similar item.
-     * 
+     *
      * @param value
      *            the long value.
      * @return a new or already existing long item.
      */
-    Item newLong(final long value) {
+    org.objectweb.asm.Item newLong(final long value) {
         key.set(value);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             pool.putByte(LONG).putLong(value);
-            result = new Item(index, key);
+            result = new org.objectweb.asm.Item(index, key);
             index += 2;
             put(result);
         }
@@ -1528,17 +1492,17 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a double to the constant pool of the class being build. Does nothing
      * if the constant pool already contains a similar item.
-     * 
+     *
      * @param value
      *            the double value.
      * @return a new or already existing double item.
      */
-    Item newDouble(final double value) {
+    org.objectweb.asm.Item newDouble(final double value) {
         key.set(value);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             pool.putByte(DOUBLE).putLong(key.longVal);
-            result = new Item(index, key);
+            result = new org.objectweb.asm.Item(index, key);
             index += 2;
             put(result);
         }
@@ -1548,17 +1512,17 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a string to the constant pool of the class being build. Does nothing
      * if the constant pool already contains a similar item.
-     * 
+     *
      * @param value
      *            the String value.
      * @return a new or already existing string item.
      */
-    private Item newString(final String value) {
+    private org.objectweb.asm.Item newString(final String value) {
         key2.set(STR, value, null, null);
-        Item result = get(key2);
+        org.objectweb.asm.Item result = get(key2);
         if (result == null) {
             pool.put12(STR, newUTF8(value));
-            result = new Item(index++, key2);
+            result = new org.objectweb.asm.Item(index++, key2);
             put(result);
         }
         return result;
@@ -1569,7 +1533,7 @@ public class ClassWriter extends ClassVisitor {
      * nothing if the constant pool already contains a similar item. <i>This
      * method is intended for {@link Attribute} sub classes, and is normally not
      * needed by class generators or adapters.</i>
-     * 
+     *
      * @param name
      *            a name.
      * @param desc
@@ -1583,19 +1547,19 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds a name and type to the constant pool of the class being build. Does
      * nothing if the constant pool already contains a similar item.
-     * 
+     *
      * @param name
      *            a name.
      * @param desc
      *            a type descriptor.
      * @return a new or already existing name and type item.
      */
-    Item newNameTypeItem(final String name, final String desc) {
+    org.objectweb.asm.Item newNameTypeItem(final String name, final String desc) {
         key2.set(NAME_TYPE, name, desc, null);
-        Item result = get(key2);
+        org.objectweb.asm.Item result = get(key2);
         if (result == null) {
             put122(NAME_TYPE, newUTF8(name), newUTF8(desc));
-            result = new Item(index++, key2);
+            result = new org.objectweb.asm.Item(index++, key2);
             put(result);
         }
         return result;
@@ -1604,14 +1568,14 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds the given internal name to {@link #typeTable} and returns its index.
      * Does nothing if the type table already contains this internal name.
-     * 
+     *
      * @param type
      *            the internal name to be added to the type table.
      * @return the index of this internal name in the type table.
      */
     int addType(final String type) {
         key.set(TYPE_NORMAL, type, null, null);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             result = addType(key);
         }
@@ -1622,7 +1586,7 @@ public class ClassWriter extends ClassVisitor {
      * Adds the given "uninitialized" type to {@link #typeTable} and returns its
      * index. This method is used for UNINITIALIZED types, made of an internal
      * name and a bytecode offset.
-     * 
+     *
      * @param type
      *            the internal name to be added to the type table.
      * @param offset
@@ -1635,7 +1599,7 @@ public class ClassWriter extends ClassVisitor {
         key.intVal = offset;
         key.strVal1 = type;
         key.hashCode = 0x7FFFFFFF & (TYPE_UNINIT + type.hashCode() + offset);
-        Item result = get(key);
+        org.objectweb.asm.Item result = get(key);
         if (result == null) {
             result = addType(key);
         }
@@ -1644,21 +1608,21 @@ public class ClassWriter extends ClassVisitor {
 
     /**
      * Adds the given Item to {@link #typeTable}.
-     * 
+     *
      * @param item
      *            the value to be added to the type table.
      * @return the added Item, which a new Item instance with the same value as
      *         the given Item.
      */
-    private Item addType(final Item item) {
+    private org.objectweb.asm.Item addType(final org.objectweb.asm.Item item) {
         ++typeCount;
-        Item result = new Item(typeCount, key);
+        org.objectweb.asm.Item result = new org.objectweb.asm.Item(typeCount, key);
         put(result);
         if (typeTable == null) {
-            typeTable = new Item[16];
+            typeTable = new org.objectweb.asm.Item[16];
         }
         if (typeCount == typeTable.length) {
-            Item[] newTable = new Item[2 * typeTable.length];
+            org.objectweb.asm.Item[] newTable = new org.objectweb.asm.Item[2 * typeTable.length];
             System.arraycopy(typeTable, 0, newTable, 0, typeTable.length);
             typeTable = newTable;
         }
@@ -1671,7 +1635,7 @@ public class ClassWriter extends ClassVisitor {
      * method calls {@link #getCommonSuperClass} and caches the result in the
      * {@link #items} hash table to speedup future calls with the same
      * parameters.
-     * 
+     *
      * @param type1
      *            index of an internal name in {@link #typeTable}.
      * @param type2
@@ -1682,12 +1646,12 @@ public class ClassWriter extends ClassVisitor {
         key2.type = TYPE_MERGED;
         key2.longVal = type1 | (((long) type2) << 32);
         key2.hashCode = 0x7FFFFFFF & (TYPE_MERGED + type1 + type2);
-        Item result = get(key2);
+        org.objectweb.asm.Item result = get(key2);
         if (result == null) {
             String t = typeTable[type1].strVal1;
             String u = typeTable[type2].strVal1;
             key2.intVal = addType(getCommonSuperClass(t, u));
-            result = new Item((short) 0, key2);
+            result = new org.objectweb.asm.Item((short) 0, key2);
             put(result);
         }
         return result.intVal;
@@ -1701,7 +1665,7 @@ public class ClassWriter extends ClassVisitor {
      * without actually loading any class, or to take into account the class
      * that is currently being generated by this ClassWriter, which can of
      * course not be loaded since it is under construction.
-     * 
+     *
      * @param type1
      *            the internal name of a class.
      * @param type2
@@ -1737,14 +1701,14 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Returns the constant pool's hash table item which is equal to the given
      * item.
-     * 
+     *
      * @param key
      *            a constant pool item.
      * @return the constant pool's hash table item which is equal to the given
      *         item, or <tt>null</tt> if there is no such item.
      */
-    private Item get(final Item key) {
-        Item i = items[key.hashCode % items.length];
+    private org.objectweb.asm.Item get(final org.objectweb.asm.Item key) {
+        org.objectweb.asm.Item i = items[key.hashCode % items.length];
         while (i != null && (i.type != key.type || !key.isEqualTo(i))) {
             i = i.next;
         }
@@ -1754,20 +1718,20 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Puts the given item in the constant pool's hash table. The hash table
      * <i>must</i> not already contains this item.
-     * 
+     *
      * @param i
      *            the item to be added to the constant pool's hash table.
      */
-    private void put(final Item i) {
+    private void put(final org.objectweb.asm.Item i) {
         if (index + typeCount > threshold) {
             int ll = items.length;
             int nl = ll * 2 + 1;
-            Item[] newItems = new Item[nl];
+            org.objectweb.asm.Item[] newItems = new org.objectweb.asm.Item[nl];
             for (int l = ll - 1; l >= 0; --l) {
-                Item j = items[l];
+                org.objectweb.asm.Item j = items[l];
                 while (j != null) {
                     int index = j.hashCode % newItems.length;
-                    Item k = j.next;
+                    org.objectweb.asm.Item k = j.next;
                     j.next = newItems[index];
                     newItems[index] = j;
                     j = k;
@@ -1783,7 +1747,7 @@ public class ClassWriter extends ClassVisitor {
 
     /**
      * Puts one byte and two shorts into the constant pool.
-     * 
+     *
      * @param b
      *            a byte.
      * @param s1
@@ -1797,7 +1761,7 @@ public class ClassWriter extends ClassVisitor {
 
     /**
      * Puts two bytes and one short into the constant pool.
-     * 
+     *
      * @param b1
      *            a byte.
      * @param b2

@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,138 +29,126 @@
  */
 package org.objectweb.asm.tree.analysis;
 
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.InvokeDynamicInsnNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-
 /**
- * An {@link Interpreter} for {@link SourceValue} values.
- * 
+ * An {@link org.objectweb.asm.tree.analysis.Interpreter} for {@link org.objectweb.asm.tree.analysis.SourceValue} values.
+ *
  * @author Eric Bruneton
  */
-public class SourceInterpreter extends Interpreter<SourceValue> implements
-        Opcodes {
-
-    public SourceInterpreter() {
-        super(ASM5);
-    }
-
-    protected SourceInterpreter(final int api) {
-        super(api);
-    }
+public class SourceInterpreter extends org.objectweb.asm.tree.analysis.Interpreter<org.objectweb.asm.tree.analysis.SourceValue> implements Opcodes {
 
     @Override
-    public SourceValue newValue(final Type type) {
+    public org.objectweb.asm.tree.analysis.SourceValue newValue(final Type type) {
         if (type == Type.VOID_TYPE) {
             return null;
         }
-        return new SourceValue(type == null ? 1 : type.getSize());
+        return new org.objectweb.asm.tree.analysis.SourceValue(type == null ? 1 : type.getSize());
     }
 
     @Override
-    public SourceValue newOperation(final AbstractInsnNode insn) {
+    public org.objectweb.asm.tree.analysis.SourceValue newOperation(final AbstractInsnNode insn) {
         int size;
-        switch (insn.getOpcode()) {
-        case LCONST_0:
-        case LCONST_1:
-        case DCONST_0:
-        case DCONST_1:
-            size = 2;
-            break;
-        case LDC:
-            Object cst = ((LdcInsnNode) insn).cst;
-            size = cst instanceof Long || cst instanceof Double ? 2 : 1;
-            break;
-        case GETSTATIC:
-            size = Type.getType(((FieldInsnNode) insn).desc).getSize();
-            break;
-        default:
-            size = 1;
+        switch (insn.opcode()) {
+            case LCONST_0:
+            case LCONST_1:
+            case DCONST_0:
+            case DCONST_1:
+                size = 2;
+                break;
+            case LDC:
+                Object cst = ((LdcInsnNode) insn).cst;
+                size = cst instanceof Long || cst instanceof Double ? 2 : 1;
+                break;
+            case GETSTATIC:
+                size = Type.getType(((FieldInsnNode) insn).desc).getSize();
+                break;
+            default:
+                size = 1;
         }
-        return new SourceValue(size, insn);
+        return new org.objectweb.asm.tree.analysis.SourceValue(size, insn);
     }
 
     @Override
-    public SourceValue copyOperation(final AbstractInsnNode insn,
-            final SourceValue value) {
-        return new SourceValue(value.getSize(), insn);
+    public org.objectweb.asm.tree.analysis.SourceValue copyOperation(final AbstractInsnNode insn,
+                                                                     final org.objectweb.asm.tree.analysis.SourceValue value) {
+        return new org.objectweb.asm.tree.analysis.SourceValue(value.getSize(), insn);
     }
 
     @Override
-    public SourceValue unaryOperation(final AbstractInsnNode insn,
-            final SourceValue value) {
+    public org.objectweb.asm.tree.analysis.SourceValue unaryOperation(final AbstractInsnNode insn,
+                                                                      final org.objectweb.asm.tree.analysis.SourceValue value) {
         int size;
-        switch (insn.getOpcode()) {
-        case LNEG:
-        case DNEG:
-        case I2L:
-        case I2D:
-        case L2D:
-        case F2L:
-        case F2D:
-        case D2L:
-            size = 2;
-            break;
-        case GETFIELD:
-            size = Type.getType(((FieldInsnNode) insn).desc).getSize();
-            break;
-        default:
-            size = 1;
+        switch (insn.opcode()) {
+            case LNEG:
+            case DNEG:
+            case I2L:
+            case I2D:
+            case L2D:
+            case F2L:
+            case F2D:
+            case D2L:
+                size = 2;
+                break;
+            case GETFIELD:
+                size = Type.getType(((FieldInsnNode) insn).desc).getSize();
+                break;
+            default:
+                size = 1;
         }
-        return new SourceValue(size, insn);
+        return new org.objectweb.asm.tree.analysis.SourceValue(size, insn);
     }
 
     @Override
-    public SourceValue binaryOperation(final AbstractInsnNode insn,
-            final SourceValue value1, final SourceValue value2) {
+    public org.objectweb.asm.tree.analysis.SourceValue binaryOperation(final AbstractInsnNode insn,
+                                                                       final org.objectweb.asm.tree.analysis.SourceValue value1, final org.objectweb.asm.tree.analysis.SourceValue value2) {
         int size;
-        switch (insn.getOpcode()) {
-        case LALOAD:
-        case DALOAD:
-        case LADD:
-        case DADD:
-        case LSUB:
-        case DSUB:
-        case LMUL:
-        case DMUL:
-        case LDIV:
-        case DDIV:
-        case LREM:
-        case DREM:
-        case LSHL:
-        case LSHR:
-        case LUSHR:
-        case LAND:
-        case LOR:
-        case LXOR:
-            size = 2;
-            break;
-        default:
-            size = 1;
+        switch (insn.opcode()) {
+            case LALOAD:
+            case DALOAD:
+            case LADD:
+            case DADD:
+            case LSUB:
+            case DSUB:
+            case LMUL:
+            case DMUL:
+            case LDIV:
+            case DDIV:
+            case LREM:
+            case DREM:
+            case LSHL:
+            case LSHR:
+            case LUSHR:
+            case LAND:
+            case LOR:
+            case LXOR:
+                size = 2;
+                break;
+            default:
+                size = 1;
         }
-        return new SourceValue(size, insn);
+        return new org.objectweb.asm.tree.analysis.SourceValue(size, insn);
     }
 
     @Override
-    public SourceValue ternaryOperation(final AbstractInsnNode insn,
-            final SourceValue value1, final SourceValue value2,
-            final SourceValue value3) {
-        return new SourceValue(1, insn);
+    public org.objectweb.asm.tree.analysis.SourceValue ternaryOperation(final AbstractInsnNode insn,
+                                                                        final org.objectweb.asm.tree.analysis.SourceValue value1, final org.objectweb.asm.tree.analysis.SourceValue value2,
+                                                                        final org.objectweb.asm.tree.analysis.SourceValue value3) {
+        return new org.objectweb.asm.tree.analysis.SourceValue(1, insn);
     }
 
     @Override
-    public SourceValue naryOperation(final AbstractInsnNode insn,
-            final List<? extends SourceValue> values) {
+    public org.objectweb.asm.tree.analysis.SourceValue naryOperation(final AbstractInsnNode insn,
+                                                                     final List<? extends org.objectweb.asm.tree.analysis.SourceValue> values) {
         int size;
-        int opcode = insn.getOpcode();
+        int opcode = insn.opcode();
         if (opcode == MULTIANEWARRAY) {
             size = 1;
         } else {
@@ -168,23 +156,23 @@ public class SourceInterpreter extends Interpreter<SourceValue> implements
                     : ((MethodInsnNode) insn).desc;
             size = Type.getReturnType(desc).getSize();
         }
-        return new SourceValue(size, insn);
+        return new org.objectweb.asm.tree.analysis.SourceValue(size, insn);
     }
 
     @Override
     public void returnOperation(final AbstractInsnNode insn,
-            final SourceValue value, final SourceValue expected) {
+                                final org.objectweb.asm.tree.analysis.SourceValue value, final org.objectweb.asm.tree.analysis.SourceValue expected) {
     }
 
     @Override
-    public SourceValue merge(final SourceValue d, final SourceValue w) {
-        if (d.insns instanceof SmallSet && w.insns instanceof SmallSet) {
-            Set<AbstractInsnNode> s = ((SmallSet<AbstractInsnNode>) d.insns)
-                    .union((SmallSet<AbstractInsnNode>) w.insns);
+    public org.objectweb.asm.tree.analysis.SourceValue merge(final org.objectweb.asm.tree.analysis.SourceValue d, final org.objectweb.asm.tree.analysis.SourceValue w) {
+        if (d.insns instanceof org.objectweb.asm.tree.analysis.SmallSet && w.insns instanceof org.objectweb.asm.tree.analysis.SmallSet) {
+            Set<AbstractInsnNode> s = ((org.objectweb.asm.tree.analysis.SmallSet<AbstractInsnNode>) d.insns)
+                    .union((org.objectweb.asm.tree.analysis.SmallSet<AbstractInsnNode>) w.insns);
             if (s == d.insns && d.size == w.size) {
                 return d;
             } else {
-                return new SourceValue(Math.min(d.size, w.size), s);
+                return new org.objectweb.asm.tree.analysis.SourceValue(Math.min(d.size, w.size), s);
             }
         }
         if (d.size != w.size || !d.insns.containsAll(w.insns)) {

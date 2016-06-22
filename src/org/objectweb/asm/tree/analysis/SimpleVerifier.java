@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the name of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -29,19 +29,19 @@
  */
 package org.objectweb.asm.tree.analysis;
 
-import java.util.List;
-
 import org.objectweb.asm.Type;
 
+import java.util.List;
+
 /**
- * An extended {@link BasicVerifier} that performs more precise verifications.
+ * An extended {@link org.objectweb.asm.tree.analysis.BasicVerifier} that performs more precise verifications.
  * This verifier computes exact class types, instead of using a single "object
- * reference" type (as done in the {@link BasicVerifier}).
- * 
+ * reference" type (as done in the {@link org.objectweb.asm.tree.analysis.BasicVerifier}).
+ *
  * @author Eric Bruneton
  * @author Bing Ran
  */
-public class SimpleVerifier extends BasicVerifier {
+public class SimpleVerifier extends org.objectweb.asm.tree.analysis.BasicVerifier {
 
     /**
      * The class that is verified.
@@ -78,7 +78,7 @@ public class SimpleVerifier extends BasicVerifier {
     /**
      * Constructs a new {@link SimpleVerifier} to verify a specific class. This
      * class will not be loaded into the JVM since it may be incorrect.
-     * 
+     *
      * @param currentClass
      *            the class that is verified.
      * @param currentSuperClass
@@ -87,14 +87,14 @@ public class SimpleVerifier extends BasicVerifier {
      *            if the class that is verified is an interface.
      */
     public SimpleVerifier(final Type currentClass,
-            final Type currentSuperClass, final boolean isInterface) {
+                          final Type currentSuperClass, final boolean isInterface) {
         this(currentClass, currentSuperClass, null, isInterface);
     }
 
     /**
      * Constructs a new {@link SimpleVerifier} to verify a specific class. This
      * class will not be loaded into the JVM since it may be incorrect.
-     * 
+     *
      * @param currentClass
      *            the class that is verified.
      * @param currentSuperClass
@@ -104,17 +104,8 @@ public class SimpleVerifier extends BasicVerifier {
      * @param isInterface
      *            if the class that is verified is an interface.
      */
-    public SimpleVerifier(final Type currentClass,
-            final Type currentSuperClass,
-            final List<Type> currentClassInterfaces, final boolean isInterface) {
-        this(ASM5, currentClass, currentSuperClass, currentClassInterfaces,
-                isInterface);
-    }
-
-    protected SimpleVerifier(final int api, final Type currentClass,
-            final Type currentSuperClass,
-            final List<Type> currentClassInterfaces, final boolean isInterface) {
-        super(api);
+    public SimpleVerifier(final Type currentClass, final Type currentSuperClass,
+                          final List<Type> currentClassInterfaces, final boolean isInterface) {
         this.currentClass = currentClass;
         this.currentSuperClass = currentSuperClass;
         this.currentClassInterfaces = currentClassInterfaces;
@@ -125,7 +116,7 @@ public class SimpleVerifier extends BasicVerifier {
      * Set the <code>ClassLoader</code> which will be used to load referenced
      * classes. This is useful if you are verifying multiple interdependent
      * classes.
-     * 
+     *
      * @param loader
      *            a <code>ClassLoader</code> to use
      */
@@ -134,47 +125,47 @@ public class SimpleVerifier extends BasicVerifier {
     }
 
     @Override
-    public BasicValue newValue(final Type type) {
+    public org.objectweb.asm.tree.analysis.BasicValue newValue(final Type type) {
         if (type == null) {
-            return BasicValue.UNINITIALIZED_VALUE;
+            return org.objectweb.asm.tree.analysis.BasicValue.UNINITIALIZED_VALUE;
         }
 
         boolean isArray = type.getSort() == Type.ARRAY;
         if (isArray) {
             switch (type.getElementType().getSort()) {
-            case Type.BOOLEAN:
-            case Type.CHAR:
-            case Type.BYTE:
-            case Type.SHORT:
-                return new BasicValue(type);
+                case Type.BOOLEAN:
+                case Type.CHAR:
+                case Type.BYTE:
+                case Type.SHORT:
+                    return new org.objectweb.asm.tree.analysis.BasicValue(type);
             }
         }
 
-        BasicValue v = super.newValue(type);
-        if (BasicValue.REFERENCE_VALUE.equals(v)) {
+        org.objectweb.asm.tree.analysis.BasicValue v = super.newValue(type);
+        if (org.objectweb.asm.tree.analysis.BasicValue.REFERENCE_VALUE.equals(v)) {
             if (isArray) {
                 v = newValue(type.getElementType());
                 String desc = v.getType().getDescriptor();
                 for (int i = 0; i < type.getDimensions(); ++i) {
                     desc = '[' + desc;
                 }
-                v = new BasicValue(Type.getType(desc));
+                v = new org.objectweb.asm.tree.analysis.BasicValue(Type.getType(desc));
             } else {
-                v = new BasicValue(type);
+                v = new org.objectweb.asm.tree.analysis.BasicValue(type);
             }
         }
         return v;
     }
 
     @Override
-    protected boolean isArrayValue(final BasicValue value) {
+    protected boolean isArrayValue(final org.objectweb.asm.tree.analysis.BasicValue value) {
         Type t = value.getType();
         return t != null
                 && ("Lnull;".equals(t.getDescriptor()) || t.getSort() == Type.ARRAY);
     }
 
     @Override
-    protected BasicValue getElementValue(final BasicValue objectArrayValue)
+    protected org.objectweb.asm.tree.analysis.BasicValue getElementValue(final org.objectweb.asm.tree.analysis.BasicValue objectArrayValue)
             throws AnalyzerException {
         Type arrayType = objectArrayValue.getType();
         if (arrayType != null) {
@@ -189,33 +180,33 @@ public class SimpleVerifier extends BasicVerifier {
     }
 
     @Override
-    protected boolean isSubTypeOf(final BasicValue value,
-            final BasicValue expected) {
+    protected boolean isSubTypeOf(final org.objectweb.asm.tree.analysis.BasicValue value,
+                                  final org.objectweb.asm.tree.analysis.BasicValue expected) {
         Type expectedType = expected.getType();
         Type type = value.getType();
         switch (expectedType.getSort()) {
-        case Type.INT:
-        case Type.FLOAT:
-        case Type.LONG:
-        case Type.DOUBLE:
-            return type.equals(expectedType);
-        case Type.ARRAY:
-        case Type.OBJECT:
-            if ("Lnull;".equals(type.getDescriptor())) {
-                return true;
-            } else if (type.getSort() == Type.OBJECT
-                    || type.getSort() == Type.ARRAY) {
-                return isAssignableFrom(expectedType, type);
-            } else {
-                return false;
-            }
-        default:
-            throw new Error("Internal error");
+            case Type.INT:
+            case Type.FLOAT:
+            case Type.LONG:
+            case Type.DOUBLE:
+                return type.equals(expectedType);
+            case Type.ARRAY:
+            case Type.OBJECT:
+                if ("Lnull;".equals(type.getDescriptor())) {
+                    return true;
+                } else if (type.getSort() == Type.OBJECT
+                        || type.getSort() == Type.ARRAY) {
+                    return isAssignableFrom(expectedType, type);
+                } else {
+                    return false;
+                }
+            default:
+                throw new Error("Internal error");
         }
     }
 
     @Override
-    public BasicValue merge(final BasicValue v, final BasicValue w) {
+    public org.objectweb.asm.tree.analysis.BasicValue merge(final org.objectweb.asm.tree.analysis.BasicValue v, final org.objectweb.asm.tree.analysis.BasicValue w) {
         if (!v.equals(w)) {
             Type t = v.getType();
             Type u = w.getType();
@@ -241,7 +232,7 @@ public class SimpleVerifier extends BasicVerifier {
                     // interfaces
                     do {
                         if (t == null || isInterface(t)) {
-                            return BasicValue.REFERENCE_VALUE;
+                            return org.objectweb.asm.tree.analysis.BasicValue.REFERENCE_VALUE;
                         }
                         t = getSuperClass(t);
                         if (isAssignableFrom(t, u)) {
