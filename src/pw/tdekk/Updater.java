@@ -292,7 +292,6 @@ public abstract class Updater extends Thread implements Runnable {
         }
         this.classes = classes + "/" + totalClasses;
         this.hooks = hooks + "/" + totalHooks;
-        appendLine(umt.toString());
         appendLine(String.format("graphs --> %d in %.2f seconds", totalGraphs, graphTime / 1e9));
         appendLine(String.format("trees --> %d in %.2f seconds", trees, treeTime / 1e9));
         appendLine(String.format("multipliers --> %s in %.2f seconds", iv.toString(), multTime / 1e9));
